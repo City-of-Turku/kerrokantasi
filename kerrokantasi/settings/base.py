@@ -134,6 +134,7 @@ CKEDITOR_IMAGE_BACKEND = 'pillow'
 MAX_IMAGE_SIZE = 10**6
 
 INSTALLED_APPS = [
+    'grappelli',
     "helusers",
     "helusers.providers.helsinki_oidc",
     'social_django',
@@ -182,6 +183,7 @@ TEMPLATES = [
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
+                'django.template.context_processors.request',
                 'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',

@@ -48,3 +48,7 @@ var/
 migrator/*.json
 migrator/*.xml
 config_dev.toml
+
+static
+env
+media

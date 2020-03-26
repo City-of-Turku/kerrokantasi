@@ -5,6 +5,7 @@ import json
 from django.conf import settings
 from django.http import HttpResponse
 
+from xlsxwriter.utility import xl_rowcol_to_cell
 from democracy.models import SectionComment
 
 from .section_comment import SectionCommentSerializer
@@ -22,7 +23,11 @@ class HearingReport(object):
         self.comments_worksheet = self.xlsdoc.add_worksheet('Comments')
         self.comments_worksheet.set_landscape()
         self.comments_worksheet_active_row = 0
+        self.polls_worksheet = self.xlsdoc.add_worksheet('Polls')
+        self.polls_worksheet.set_landscape()
+        self.polls_worksheet_active_row = 0
         self.format_bold = self.xlsdoc.add_format({'bold': True})
+        self.format_percent = self.xlsdoc.add_format({'num_format': '0 %'})
         self.context = context
 
     def add_hearing_row(self, label, content):
@@ -117,9 +122,95 @@ class HearingReport(object):
 
         self.add_hearing_row('All comments', str(comments_count))
 
+    
+    def generate_polls_worksheet(self):
+        '''
+        Poll question | Poll type | Total votes | How many people answered the question
+        "question?"   | "type"    | num         | num
+        Options       | Votes     | Votes % 
+        "1) option"   | 1         | 10%    
+        "2) option"   | 9         | 90%    
+        -- empty rows after each question --
+        '''
+        self.polls_worksheet.set_header('Polls of %s' % self._get_default_translation(self.json['title']))
+        self.polls_worksheet_active_row = 0
+
+        self.polls_worksheet.set_column('A:A', 50)
+        self.polls_worksheet.set_column('B:B', 13)
+        self.polls_worksheet.set_column('C:C', 10)
+        self.polls_worksheet.set_column('D:D', 35)
+
+        # find sections with questions
+        sections = self.json['sections']
+        questions = []
+        for section in sections:
+            questions.extend(section['questions'])
+
+        # add question data for each question
+        for question in questions:
+            self.add_poll_question_rows(question)
+            # add space between questions
+            self.polls_worksheet_active_row += 2
+
+
+    def add_poll_question_rows(self, question):
+        '''
+        Poll question | Poll type | Total votes | how many people answered the question
+        "question?"   | "type"    | num         | num
+        '''
+        row = self.polls_worksheet_active_row
+        # headers
+        self.polls_worksheet.write(row, 0, 'Poll question', self.format_bold)
+        self.polls_worksheet.write(row, 1, 'Poll type', self.format_bold)
+        self.polls_worksheet.write(row, 2, 'Total votes', self.format_bold)
+        self.polls_worksheet.write(row, 3, 'How many people answered the question', self.format_bold)
+        self.polls_worksheet_active_row += 1
+
+        # options total vote count
+        options = question['options']
+        total_options_answers = 0
+        for option in options:
+            total_options_answers += option['n_answers']
+
+        # values under headers
+        row = self.polls_worksheet_active_row
+        self.polls_worksheet.write(row, 0, self._get_default_translation(question['text']))
+        self.polls_worksheet.write(row, 1, question['type'])
+        self.polls_worksheet.write(row, 2, total_options_answers)
+        self.polls_worksheet.write(row, 3, question['n_answers'])
+        # store n_answers cell location for option answer % calculation
+        total_answers_cell = xl_rowcol_to_cell(row, 2)
+        self.polls_worksheet_active_row += 1
+
+        # option rows
+        self.add_poll_question_option_rows(options, total_answers_cell)
+
+    
+    def add_poll_question_option_rows(self, options, total_answers_cell):
+        '''
+        Options     | Votes | Votes % 
+        "1) option" | 1     | 10 %    
+        '''
+        row = self.polls_worksheet_active_row
+        # headers
+        self.polls_worksheet.write(row, 0, 'Options', self.format_bold)
+        self.polls_worksheet.write(row, 1, 'Votes', self.format_bold)
+        self.polls_worksheet.write(row, 2, 'Votes %', self.format_bold)
+        self.polls_worksheet_active_row += 1
+
+        # values under headers
+        for index, option in enumerate(options, start=1):
+            row = self.polls_worksheet_active_row
+            self.polls_worksheet.write(row, 0, f"{index}) {self._get_default_translation(option['text'])}")
+            self.polls_worksheet.write(row, 1, option['n_answers'])
+            self.polls_worksheet.write(row, 2, f"={xl_rowcol_to_cell(row, 1)}/{total_answers_cell}", self.format_percent)
+            self.polls_worksheet_active_row += 1
+        
+
     def get_xlsx(self):
         self.generate_hearing_worksheet()
         self.generate_comments_worksheet()
+        self.generate_polls_worksheet()
         self.xlsdoc.close()
 
         return self.buffer.getvalue()

@@ -159,6 +159,7 @@ class HearingReport(object):
         "question?"   | "type"    | num         | num
         '''
         row = self.polls_worksheet_active_row
+        chart_location = (row, 5) # set chart to start on the same row as headers
         # headers
         self.polls_worksheet.write(row, 0, 'Poll question', self.format_bold)
         self.polls_worksheet.write(row, 1, 'Poll type', self.format_bold)
@@ -174,7 +175,9 @@ class HearingReport(object):
 
         # values under headers
         row = self.polls_worksheet_active_row
-        self.polls_worksheet.write(row, 0, self._get_default_translation(question['text']))
+        question_text = self._get_default_translation(question['text'])
+
+        self.polls_worksheet.write(row, 0, question_text)
         self.polls_worksheet.write(row, 1, question['type'])
         self.polls_worksheet.write(row, 2, total_options_answers)
         self.polls_worksheet.write(row, 3, question['n_answers'])
@@ -182,8 +185,14 @@ class HearingReport(object):
         total_answers_cell = xl_rowcol_to_cell(row, 2)
         self.polls_worksheet_active_row += 1
 
-        # option rows
-        self.add_poll_question_option_rows(options, total_answers_cell)
+        # add option rows, store option cell info
+        option_cells = self.add_poll_question_option_rows(options, total_answers_cell)
+
+        # add space after options to make room for chart (2 rows per option)
+        empty_rows_after_options = len(options) * 2
+        self.polls_worksheet_active_row += empty_rows_after_options
+        # add chart
+        self.add_poll_question_chart(question_text, option_cells, chart_location, empty_rows_after_options)
 
     
     def add_poll_question_option_rows(self, options, total_answers_cell):
@@ -198,6 +207,9 @@ class HearingReport(object):
         self.polls_worksheet.write(row, 2, 'Votes %', self.format_bold)
         self.polls_worksheet_active_row += 1
 
+        # store category and value start locations for later calculations
+        categories_start = (self.polls_worksheet_active_row, 0)
+        values_start = (self.polls_worksheet_active_row, 2)
         # values under headers
         for index, option in enumerate(options, start=1):
             row = self.polls_worksheet_active_row
@@ -205,7 +217,58 @@ class HearingReport(object):
             self.polls_worksheet.write(row, 1, option['n_answers'])
             self.polls_worksheet.write(row, 2, f"={xl_rowcol_to_cell(row, 1)}/{total_answers_cell}", self.format_percent)
             self.polls_worksheet_active_row += 1
+
+        # store category and value end locations for later calculations
+        categories_end = (self.polls_worksheet_active_row-1, 0) # -1 row to not include empty row
+        values_end = (self.polls_worksheet_active_row-1, 2) # -1 row to not include empty row
+
+        # return dict containing option cell info
+        return {
+            'categories_start': categories_start,
+            'values_start': values_start,
+            'categories_end': categories_end,
+            'values_end': values_end,
+            'option_count': len(options)
+            }
+    
+    def add_poll_question_chart(self, question_text, option_cells, chart_location, empty_rows_after_options = 0):        
+        chart = self.xlsdoc.add_chart({'type': 'bar'})
+        # Configure the series.
+        # [sheetname, first_row, first_col, last_row, last_col]
+        chart.add_series({
+            'categories': ['Polls', option_cells['categories_start'][0], option_cells['categories_start'][1],
+                option_cells['categories_end'][0], option_cells['categories_end'][1]], 
+            'values':     ['Polls', option_cells['values_start'][0], option_cells['values_start'][1],
+                option_cells['values_end'][0], option_cells['values_end'][1]],
+        })
+
+        # Add a chart title and remove series title
+        chart.set_title ({
+            'name': question_text,
+            'name_font': {'name': 'Calibri', 'size': 14, 'bold': False}
+        }) # poll question
+        chart.set_legend({'none': True}) # removes "series 1"
         
+        # chart and axis styles
+        #chart.set_style(1)
+        chart.set_x_axis({
+            'max': 1, # percent scale to always be up to 100%
+            'num_font': {'name': 'Calibri', 'size': 9},
+        })
+        chart.set_y_axis({
+            'num_font': {'name': 'Calibri', 'size': 9},
+        })
+
+        # calculate chart height
+        # standard row pixel height is 20px
+        # height = (header rows (3) + option rows + empty rows) * row height
+        option_count = option_cells['option_count']
+        chart_height = (3 + option_count + empty_rows_after_options) * 20
+        chart.set_size({'width': 480, 'height': chart_height})
+
+        # Insert the chart into the worksheet.
+        self.polls_worksheet.insert_chart(chart_location[0], chart_location[1], chart)
+
 
     def get_xlsx(self):
         self.generate_hearing_worksheet()

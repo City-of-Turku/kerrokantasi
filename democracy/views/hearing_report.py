@@ -63,14 +63,24 @@ class HearingReport(object):
         self.add_hearing_row('Comments', str(self.json['n_comments']))
         self.add_hearing_row('Sections', str(len(self.json['sections'])))
 
-    def add_section_worksheet(self, section):
+    def add_section_worksheet(self, section, section_index):
         section_name = ""
+        # main section name is always type name
         if section['type'] == 'main':
             section_name = section['type_name_singular']
         else:
-            section_name = self._get_default_translation(section['title'])
+            # sub section names use their title or type name if title doesnt exist
+            title = self._get_default_translation(section['title'])
+            if title:
+                section_name = self._get_default_translation(section['title'])
+            else:
+                section_name = section['type_name_singular']
 
-        # worksheet name must be <= 31 chars
+        # worksheet name must be <= 31 chars and doc cannot have duplicate sheet names
+        # duplicates are named like "sheetname(n)"
+        if self.xlsdoc.get_worksheet_by_name(section_name) != None:
+            section_name = f"{section_name[:28]}({section_index})"
+
         section_worksheet = self.xlsdoc.add_worksheet(section_name[:31])
         section_worksheet.set_landscape()
         section_worksheet.set_column('A:A', 50)
@@ -301,8 +311,8 @@ class HearingReport(object):
         self.generate_hearing_worksheet()
 
         sections = self.json['sections']
-        for section in sections:
-            self.add_section_worksheet(section)
+        for section_index, section in enumerate(sections, start=0):
+            self.add_section_worksheet(section, section_index)
 
         self.xlsdoc.close()
 

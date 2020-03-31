@@ -101,9 +101,9 @@ class HearingReport(object):
     
     def add_section_comments(self, section, section_worksheet):
         '''
-        Author        | Created | Votes | Label   | Content        | Geojson      | Images
-        "commenter 1" | "date"  | num   | "label" | "comment text" | "geo data"   | "url"
-        "commenter 2" | "date"  | num   | "label" | "comment text" | "geo data"   | "url"
+        Content        | Created | Votes | Label   | Geojson      | Images
+        "comment text" | "date"  | num   | "label" | "geo data"   | "url"
+        "comment text" | "date"  | num   | "label" | "geo data"   | "url"
         '''
 
         # add comments title
@@ -113,13 +113,14 @@ class HearingReport(object):
 
         # add column headers
         row = self.section_worksheet_active_row
-        section_worksheet.write(row, 0, 'Author', self.format_bold)
+        # author names shouldnt be included in outgoing files unless masked somehow
+        #section_worksheet.write(row, 0, 'Author', self.format_bold)
+        section_worksheet.write(row, 0, 'Content', self.format_bold)
         section_worksheet.write(row, 1, 'Created', self.format_bold)
         section_worksheet.write(row, 2, 'Votes', self.format_bold)
         section_worksheet.write(row, 3, 'Label', self.format_bold)
-        section_worksheet.write(row, 4, 'Content', self.format_bold)
-        section_worksheet.write(row, 5, 'Geojson', self.format_bold)
-        section_worksheet.write(row, 6, 'Images', self.format_bold)
+        section_worksheet.write(row, 4, 'Geojson', self.format_bold)
+        section_worksheet.write(row, 5, 'Images', self.format_bold)
 
         self.section_worksheet_active_row += 1
 
@@ -131,11 +132,13 @@ class HearingReport(object):
 
     def add_comment_row(self, comment, section_worksheet):
         '''
-        "commenter 1" | "date"  | num   | "label" | "comment text" | "geo data"   | "url"
+        "comment text" | "date"  | num   | "label" | "geo data"   | "url"
         '''
         row = self.section_worksheet_active_row
-        # add author
-        section_worksheet.write(row, 0, comment['author_name'])
+        # author names shouldnt be included in outgoing files unless masked somehow
+        # section_worksheet.write(row, 0, comment['author_name'])
+        # add content
+        section_worksheet.write(row, 0, comment['content'])
         # add creation date
         section_worksheet.write(row, 1, comment['created_at'])
         # add votes
@@ -143,11 +146,10 @@ class HearingReport(object):
         # add label
         section_worksheet.write(row, 3, self._get_default_translation(comment['label'].get('label')
                                                                             if comment['label'] else {}))
-        # add content
-        section_worksheet.write(row, 4, comment['content'])
         # add geojson
-        section_worksheet.write(row, 5, json.dumps(comment['geojson']))
-        section_worksheet.write(row, 6, ','.join(
+        section_worksheet.write(row, 4, json.dumps(comment['geojson']))
+         # add img
+        section_worksheet.write(row, 5, ','.join(
             image['url'] for image in comment['images']))
         self.section_worksheet_active_row += 1
 

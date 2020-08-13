@@ -260,6 +260,8 @@ def test_post_section_poll_answer_multiple_choice_second_answers(john_doe_api_cl
 # [{'answers': [34, 33], 'question': 14, 'type': 'multiple-choice'}, {'answers': [36], 'question': 15, 'type': 'single-choice'}]
 # 
 # As we were unable to determine the cause of this behaviour and it only affects 2 tests(both in this file) we skip them.
+#
+# This does not affect kerrokantasi normal operation.
 @pytest.mark.skipif(isArchLinux, reason="Arch based distros handle get/post request response order differently/order is reversed")
 @pytest.mark.django_db
 def test_patch_section_poll_answer(john_doe_api_client, default_hearing, geojson_feature):
@@ -318,6 +320,8 @@ def test_patch_section_poll_answer(john_doe_api_client, default_hearing, geojson
 # [{'answers': [3, 2], 'question': 1, 'type': 'multiple-choice'}, {'answers': [5], 'question': 2, 'type': 'single-choice'}]
 # 
 # As we were unable to determine the cause of this behaviour and it only affects 2 tests(both in this file) we skip them.
+#
+# This does not affect kerrokantasi normal operation.
 @pytest.mark.skipif(isArchLinux, reason="Arch based distros handle get/post request response order differently/order is reversed")
 @pytest.mark.django_db
 def test_put_section_poll_answer(john_doe_api_client, default_hearing, geojson_feature):

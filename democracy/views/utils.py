@@ -5,7 +5,7 @@ from functools import lru_cache
 import json
 
 from django.conf import settings
-from django.contrib.gis.geos import GEOSGeometry
+from django.contrib.gis.geos import GEOSGeometry, GeometryCollection
 from django.contrib.gis.gdal.error import GDALException
 from django.core.exceptions import ImproperlyConfigured
 from django.core.files.base import ContentFile
@@ -200,6 +200,7 @@ class NestedPKRelatedField(PrimaryKeyRelatedField):
 class GeoJSONField(serializers.JSONField):
 
     def to_internal_value(self, data):
+        gc = GeometryCollection()
         if not data:
             return None
         geometry = data.get('geometry', None) or data
@@ -209,7 +210,7 @@ class GeoJSONField(serializers.JSONField):
 
         supported_types = [
             'Feature', 'Point', 'LineString', 'Polygon', 'MultiPoint',
-            'MultiLineString', 'MultiPolygon',
+            'MultiLineString', 'MultiPolygon', 'FeatureCollection', 
         ]
         if data['type'] not in supported_types:
             raise ValidationError('Invalid geojson format. Type is not supported.'
@@ -219,9 +220,16 @@ class GeoJSONField(serializers.JSONField):
                                   })
 
         try:
-            GEOSGeometry(json.dumps(geometry))
+            if data.get('features'):
+                for feat in data.get('features'):
+                    geot = feat.get('geometry')
+                    geo = GEOSGeometry(json.dumps(geot))
+                    gc.append(geo)
+            else:
+                GEOSGeometry(json.dumps(geometry))
         except GDALException:
             raise ValidationError('Invalid geojson format: %(data)s' % {'data': data})
+
         return super(GeoJSONField, self).to_internal_value(data)
 
 

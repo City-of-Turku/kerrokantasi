@@ -618,7 +618,7 @@ def test_hearing_geojson_feature(request, john_smith_api_client, valid_hearing_j
     hearing_geometry = json.loads(hearing.geometry.geojson)
     assert hearing.geojson == feature
     assert hearing_data['geojson'] == feature
-    assert hearing_data['geojson']['geometry'] == hearing_geometry
+    assert hearing_data['geojson']['geometry'] == hearing_geometry['geometries'][0]
     geojson_data = get_data_from_response(john_smith_api_client.get(get_detail_url(hearing.pk), {'format': 'geojson'}))
     assert geojson_data['id'] == hearing.pk
     assert_common_keys_equal(geojson_data['geometry'], feature['geometry'])
@@ -646,7 +646,7 @@ def test_hearing_geojson_geometry_only(request, john_smith_api_client, valid_hea
     hearing_geometry = json.loads(hearing.geometry.geojson)
     assert hearing.geojson == geojson_geometry
     assert hearing_data['geojson'] == geojson_geometry
-    assert hearing_data['geojson'] == hearing_geometry
+    assert hearing_data['geojson'] == hearing_geometry['geometries'][0]
     geojson_data = get_data_from_response(john_smith_api_client.get(get_detail_url(hearing.pk), {'format': 'geojson'}))
     assert geojson_data['id'] == hearing.pk
     assert_common_keys_equal(geojson_data['geometry'], geojson_geometry)
@@ -654,11 +654,30 @@ def test_hearing_geojson_geometry_only(request, john_smith_api_client, valid_hea
     map_data = get_data_from_response(john_smith_api_client.get(list_endpoint + 'map/'))
     assert map_data['results'][0]['geojson'] == geojson_geometry
 
+@pytest.mark.django_db
+@pytest.mark.parametrize('geometry_fixture_name', [
+    'geojson_featurecollection',
+])
+def test_hearing_geojson_featurecollection_only(request, john_smith_api_client, valid_hearing_json, geometry_fixture_name):
+    geojson_geometry = request.getfixturevalue(geometry_fixture_name)
+    valid_hearing_json['geojson'] = geojson_geometry
+    response = john_smith_api_client.post(endpoint, data=valid_hearing_json, format='json')
+    hearing_data = get_data_from_response(response, status_code=201)
+    hearing = Hearing.objects.get(pk=hearing_data['id'])
+    hearing_geometry = json.loads(hearing.geometry.geojson)
+    assert hearing.geojson == geojson_geometry
+    assert hearing_data['geojson'] == geojson_geometry
+    assert hearing_data['geojson']['features'][0]['geometry'] == hearing_geometry['geometries'][0]
+    geojson_data = get_data_from_response(john_smith_api_client.get(get_detail_url(hearing.pk), {'format': 'geojson'}))
+    assert geojson_data['id'] == hearing.pk
+    assert_common_keys_equal(geojson_data, geojson_geometry)
+    assert_common_keys_equal(geojson_data['properties'], hearing_data)
+    map_data = get_data_from_response(john_smith_api_client.get(list_endpoint + 'map/'))
+    assert map_data['results'][0]['geojson'] == geojson_geometry
 
 @pytest.mark.django_db
 @pytest.mark.parametrize('geojson_fixture_name', [
     'geojson_geometrycollection',
-    'geojson_featurecollection',
 ])
 def test_hearing_geojson_unsupported_types(request, john_smith_api_client, valid_hearing_json, geojson_fixture_name):
     geojson = request.getfixturevalue(geojson_fixture_name)

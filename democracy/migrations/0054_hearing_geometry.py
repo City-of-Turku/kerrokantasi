@@ -3,6 +3,27 @@
 import django.contrib.gis.db.models.fields
 import django.core.files.storage
 from django.db import migrations, models
+from django.contrib.gis.geos import GEOSGeometry, GeometryCollection
+import json
+
+
+def get_geometry_from_geojson(geojson):
+    gc = GeometryCollection()
+    if geojson is None:
+        return None
+
+    geometry_data = geojson.get('geometry', None) or geojson
+    geometry = GEOSGeometry(json.dumps(geometry_data))
+    gc.append(geometry)
+
+    return gc
+
+
+def hearings_geometry_migration(apps, schema_editor):
+    Hearing = apps.get_model('democracy', 'Hearing')
+    for hearing in Hearing.objects.filter(geojson__isnull=False):
+        hearing.geometry = get_geometry_from_geojson(hearing.geojson)
+        hearing.save()
 
 
 class Migration(migrations.Migration):
@@ -12,6 +33,7 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        migrations.RunPython(hearings_geometry_migration),
         migrations.AlterField(
             model_name='hearing',
             name='geometry',

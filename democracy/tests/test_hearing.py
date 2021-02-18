@@ -707,29 +707,6 @@ def test_hearing_bbox_filtering(
 
 
 @pytest.mark.django_db
-@pytest.mark.parametrize('geometry_fixture_name', [
-    'geojson_point',
-    'geojson_multipoint',
-    'geojson_polygon',
-    'geojson_polygon_with_hole',
-    'geojson_multipolygon',
-    'geojson_linestring',
-    'geojson_multilinestring',
-])
-def test_hearing_bbox_filtering_geometries(
-        request, api_client, random_hearing,
-        geometry_fixture_name, bbox_containing_geometries):
-    geometry = request.getfixturevalue(geometry_fixture_name)
-    feature = get_feature_with_geometry(geometry)
-    random_hearing.geojson = feature
-    random_hearing.save()
-    bbox_query = '?bbox=%s' % bbox_containing_geometries
-    data = get_data_from_response(api_client.get(list_endpoint + bbox_query))
-    assert len(data['results']) == 1
-    assert data['results'][0]['id'] == random_hearing.pk
-
-
-@pytest.mark.django_db
 def test_hearing_copy(default_hearing, random_label):
     Section.objects.create(
         type=SectionType.objects.get(identifier=InitialSectionType.CLOSURE_INFO),

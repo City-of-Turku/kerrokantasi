@@ -688,25 +688,6 @@ def test_hearing_geojson_unsupported_types(request, john_smith_api_client, valid
 
 
 @pytest.mark.django_db
-def test_hearing_bbox_filtering(
-        request, api_client, random_hearing, geojson_feature,
-        bbox_containing_feature, bbox_containing_geometries, bbox_all):
-    random_hearing.geojson = geojson_feature
-    random_hearing.save()
-    containing_query = '?bbox=%s' % bbox_containing_feature
-    not_containing_query = '?bbox=%s' % bbox_containing_geometries
-    bbox_all_query = '?bbox=%s' % bbox_all
-    data = get_data_from_response(api_client.get(list_endpoint + containing_query))
-    assert len(data['results']) == 1
-    assert data['results'][0]['id'] == random_hearing.pk
-    data = get_data_from_response(api_client.get(list_endpoint + not_containing_query))
-    assert len(data['results']) == 0
-    data = get_data_from_response(api_client.get(list_endpoint + bbox_all_query))
-    assert len(data['results']) == 1
-    assert data['results'][0]['id'] == random_hearing.pk
-
-
-@pytest.mark.django_db
 def test_hearing_copy(default_hearing, random_label):
     Section.objects.create(
         type=SectionType.objects.get(identifier=InitialSectionType.CLOSURE_INFO),

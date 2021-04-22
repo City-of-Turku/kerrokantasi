@@ -38,6 +38,11 @@ DEBUG=True
 # Django setting: ADMINS https://docs.djangoproject.com/en/2.2/ref/settings/#admins
 ADMINS=admin@this.kerrokantasi.instance,another-admin@this.kerrokantasi
 
+# Url where to redirect after Administrator logs out from Django Admin-panel
+# Can be full url or url path
+
+#ADMIN_LOGOUT_REDIRECT=/admin
+
 # Configures database for Kerrokantasi using URL style. Format is:
 # postgis://USER:PASSWORD@HOST:PORT/NAME
 # Unused components may be left out, only Postgis is supported

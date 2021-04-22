@@ -66,6 +66,7 @@ env = environ.Env(
     SOCIAL_AUTH_TUNNISTAMO_SECRET=(str, ''),
     SOCIAL_AUTH_TUNNISTAMO_OIDC_ENDPOINT=(str, ''),
     STRONG_AUTH_PROVIDERS=(list, []),
+    ADMIN_LOGOUT_REDIRECT=(str, '')
 )
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -98,6 +99,8 @@ STATIC_URL = env('STATIC_URL')
 USE_X_FORWARDED_HOST = env('TRUST_X_FORWARDED_HOST')
 
 INTERNAL_IPS = env('INTERNAL_IPS')
+
+ADMIN_LOGOUT_REDIRECT = env('ADMIN_LOGOUT_REDIRECT')
 
 #### Helsinki specific settings handling ####
 

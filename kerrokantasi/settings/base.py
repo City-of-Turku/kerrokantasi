@@ -66,7 +66,7 @@ env = environ.Env(
     SOCIAL_AUTH_TUNNISTAMO_SECRET=(str, ''),
     SOCIAL_AUTH_TUNNISTAMO_OIDC_ENDPOINT=(str, ''),
     STRONG_AUTH_PROVIDERS=(list, []),
-    LOGOUT_REDIRECT_URL=(str, '')
+    LOGOUT_REDIRECT_URL=(str, '/')
 )
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)

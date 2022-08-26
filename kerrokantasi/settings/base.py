@@ -81,6 +81,12 @@ env = environ.Env(
     LOGOUT_REDIRECT_URL=(str, '/'),
     HEARING_REPORT_PUBLIC_AUTHOR_NAMES=(bool, True),
     HEARING_REPORT_THEME=(str, 'whitelabel'),
+    USER_EXPIRATION_DAYS=(int, 365),
+    USE_DJANGO_SMTP_BACKEND=(bool, False),
+    EMAIL_ENABLED=(bool, False),
+    EMAIL_FROM=(str, ''),
+    EMAIL_HOST=(str, ''),
+    EMAIL_PORT=(int, 25),
 )
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -330,6 +336,7 @@ AUTHENTICATION_BACKENDS = (
 )
 
 AUTH_USER_MODEL = 'kerrokantasi.User'
+USER_EXPIRATION_DAYS = env('USER_EXPIRATION_DAYS')
 LOGIN_REDIRECT_URL = '/'
 
 SOCIAL_AUTH_TUNNISTAMO_KEY = env('SOCIAL_AUTH_TUNNISTAMO_KEY')
@@ -380,3 +387,20 @@ SITE_ID=1
 
 HEARING_REPORT_PUBLIC_AUTHOR_NAMES = env('HEARING_REPORT_PUBLIC_AUTHOR_NAMES')
 HEARING_REPORT_THEME = env('HEARING_REPORT_THEME')
+
+
+EMAIL_ENABLED = env('EMAIL_ENABLED')
+
+
+if EMAIL_ENABLED:
+    EMAIL_BACKEND = \
+        'django.core.mail.backends.smtp.EmailBackend' \
+        if env('USE_DJANGO_SMTP_BACKEND') else \
+        'django.core.mail.backends.console.EmailBackend'
+
+    EMAIL_HOST = env('EMAIL_HOST')
+    EMAIL_PORT = env('EMAIL_PORT')
+    EMAIL_HOST_USER = env('EMAIL_FROM')
+    EMAIL_USE_TLS = True
+
+    DEFAULT_FROM_EMAIL = env('EMAIL_FROM')

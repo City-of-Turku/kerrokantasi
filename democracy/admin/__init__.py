@@ -17,6 +17,7 @@ from django.utils.text import capfirst
 from django.utils.html import format_html
 from django.utils.translation import ugettext_lazy as _
 from django.urls import reverse
+from django_admin_inline_paginator.admin import TabularInlinePaginated
 from ckeditor_uploader.widgets import CKEditorUploadingWidget
 from djgeojson.fields import GeoJSONFormField
 from leaflet.admin import LeafletGeoAdmin
@@ -27,6 +28,7 @@ from parler.forms import TranslatableModelForm, TranslatableBaseInlineFormSet
 from democracy import models
 from democracy.admin.widgets import Select2SelectMultiple, ShortTextAreaWidget
 from democracy.enums import InitialSectionType
+from democracy.models.organization import Organization, OrganizationLog
 from democracy.models.utils import copy_hearing
 from democracy.plugins import get_implementation
 
@@ -295,12 +297,36 @@ class SectionTypeAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         return super().get_queryset(request).exclude_initial()
 
+class OrganizationLogInline(TabularInlinePaginated):
+    per_page = 5
+    model = OrganizationLog
+    extra = 0
+    fields = (
+        'created_at',
+        'action_by',
+        'action',
+    )
+    ordering = ('-created_at', )
+    readonly_fields = fields
+    can_delete = False
+
+    def has_add_permission(self, request, obj):
+        return False
 
 class OrganizationAdmin(admin.ModelAdmin):
+    inlines = (
+        OrganizationLogInline,
+    )
+
     formfield_overrides = {
         ManyToManyField: {'widget': FilteredSelectMultiple("ylläpitäjät", is_stacked=False)},
     }
     exclude = ('published', )
+
+
+    def save_model(self, request, obj, form, change):
+        obj.modified_by = request.user
+        return super().save_model(request, obj, form, change)
 
 
 class ContactPersonAdmin(TranslatableAdmin, admin.ModelAdmin):

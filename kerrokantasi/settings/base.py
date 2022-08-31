@@ -191,6 +191,7 @@ INSTALLED_APPS = [
     'democracy',  # Reusable participatory democracy app
     'parler',
     'django_filters',
+    'django_admin_inline_paginator',
 ] + env("EXTRA_INSTALLED_APPS")
 
 MIDDLEWARE = [

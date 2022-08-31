@@ -267,3 +267,9 @@ msgstr "Kirjaudu palveluun sitä ennen, jos haluat, että tunnuksesi pysyvät vo
 
 msgid "Best regards, Kerrokantasi"
 msgstr "Terveisin, Kerrokantasi"
+
+msgid "Added: %(email)s"
+msgstr "Lisätty: %(email)s"
+
+msgid "Removed: %(email)s"
+msgstr "Poistettu: %(email)s"

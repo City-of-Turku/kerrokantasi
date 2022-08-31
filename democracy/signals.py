@@ -8,7 +8,10 @@ from django.utils.translation import gettext_lazy as _
 def organization_log_signal(sender, **kwargs):
     instance = kwargs.get('instance', None)
     action = kwargs.get('action')
-    users = User.objects.filter(pk__in=kwargs.get('pk_set'))
+    pk_set = kwargs.get('pk_set')
+    if any(isinstance(_id, str) for _id in pk_set):
+        return
+    users = User.objects.filter(pk__in=pk_set)
     if action == 'post_add':
         OrganizationLog.objects.create(
             organization=instance,

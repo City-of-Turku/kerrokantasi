@@ -1089,6 +1089,52 @@ def test_POST_hearing_with_existing_project(valid_hearing_json, default_project,
 
 
 @pytest.mark.django_db
+def test_POST_hearing_with_attachment(valid_hearing_json, section_file_orphan,
+    john_smith_api_client):
+    """
+    Tests that a hearing can be created with an attachment
+    """
+    # file is created as orphaned file before linking it to a hearing
+    file = sectionfile_base64_test_data()
+    file_id = section_file_orphan.id
+    file.update({'id': file_id})
+    sections = valid_hearing_json['sections']
+    sections[2].update({'files': [file]})
+    valid_hearing_json.update({'sections': sections, 'isNew': True})
+
+    response = john_smith_api_client.post(endpoint, data=valid_hearing_json, format='json')
+    data = get_data_from_response(response, status_code=201)
+    section_files = data['sections'][2]['files']
+    assert len(section_files) == 1
+    assert section_files[0]['id'] == file_id
+
+
+@pytest.mark.django_db
+def test_PUT_hearing_with_attachment(valid_hearing_json, section_file_orphan,
+    john_smith_api_client):
+    """
+    Tests that a hearing can be updated with an attachment
+    """
+    response_post = john_smith_api_client.post(endpoint, data=valid_hearing_json, format='json')
+    data_post = get_data_from_response(response_post, status_code=201)
+    # file is created as orphaned file before linking it to a hearing
+    file = sectionfile_base64_test_data()
+    file_id = section_file_orphan.id
+    file.update({'id': file_id})
+    sections = data_post['sections']
+    sections[2].update({'files': [file]})
+    data_post.update({'sections': sections})
+
+    response_put = john_smith_api_client.put(
+        '%s%s/' % (endpoint, data_post['id']), data=data_post, format='json'
+    )
+    data_put = get_data_from_response(response_put, status_code=200)
+    section_files = data_put['sections'][2]['files']
+    assert len(section_files) == 1
+    assert section_files[0]['id'] == file_id
+
+
+@pytest.mark.django_db
 def test_POST_hearing_with_updated_project(valid_hearing_json, default_project, default_project_json, john_smith_api_client):
     updated_title = 'updated title'
     default_project_json['project']['title'] = {'en': updated_title}

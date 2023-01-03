@@ -66,5 +66,6 @@ jobs:
           DATABASE_URL: postgis://kerrokantasi:kerrokantasi@localhost/kerrokantasi
           DEBUG: true
           SECRET_KEY: kerrokantasi_secret
+          HEARING_REPORT_PUBLIC_AUTHOR_NAMES: false
         run: |
           pytest

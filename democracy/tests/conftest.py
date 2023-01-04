@@ -212,11 +212,6 @@ def default_project():
             'schedule': 'Phase %d schedule' % i,
         }
         ProjectPhase.objects.create(**phase_data)
-        #TEMP
-        print(f'phase_data: {phase_data}')
-
-    #TEMP
-    print(f'project phases: {project}')
     return project
 
 

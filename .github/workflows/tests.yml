@@ -67,6 +67,6 @@ jobs:
           DEBUG: true
           SECRET_KEY: kerrokantasi_secret
           HEARING_REPORT_PUBLIC_AUTHOR_NAMES: false
-          GITHUB_ACTION_TEST: True
+          GITHUB_ACTION_TEST: 'true'
         run: |
           pytest

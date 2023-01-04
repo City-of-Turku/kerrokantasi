@@ -236,6 +236,8 @@ def default_project_json(default_project):
 
         })
         is_first_loop = False
+    # TEMP
+    print(f'project_data: {project_data}')
     return project_data
 
 
@@ -1170,9 +1172,16 @@ def test_POST_hearing_with_updated_project(valid_hearing_json, default_project, 
 @pytest.mark.django_db
 def test_POST_hearing_with_updated_project_add_translation(valid_hearing_json, default_project, default_project_json, john_smith_api_client):
     # replace English with Finnish translation in project
+    #TEMP
+    print(f'default_project_json: {default_project_json}')
+
     default_project_json['project']['title'] = {'fi': 'Oletusprojekti'}
     default_project_json['project']['phases'][2]['title'] = {'fi': 'Vaihe 3'}
     valid_hearing_json.update(default_project_json)
+    #TEMP
+    print(f'valid_hearing_json: {valid_hearing_json["project"]}')
+    print(f'default_project_json: {default_project_json}')
+
     response = john_smith_api_client.post(endpoint, data=valid_hearing_json, format='json')
     data = get_data_from_response(response, status_code=201)
     assert 'project' in data

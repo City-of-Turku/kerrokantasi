@@ -255,3 +255,21 @@ msgstr "monivalintakysymys"
 
 msgid "total answers"
 msgstr "vastauksia yhteensä"
+
+msgid "Kerrokantasi account expiration"
+msgstr "Kerrokantasi tilin vanheneminen"
+
+msgid "Kerrokantasi account will expire %(date)s."
+msgstr "Kerrokantasi-tunnuksesi ovat vanhenemassa %(date)s."
+
+msgid "You must login to the service before the expiration date to prevent account removal."
+msgstr "Kirjaudu palveluun sitä ennen, jos haluat, että tunnuksesi pysyvät voimassa."
+
+msgid "Best regards, Kerrokantasi"
+msgstr "Terveisin, Kerrokantasi"
+
+msgid "Added: %(email)s"
+msgstr "Lisätty: %(email)s"
+
+msgid "Removed: %(email)s"
+msgstr "Poistettu: %(email)s"

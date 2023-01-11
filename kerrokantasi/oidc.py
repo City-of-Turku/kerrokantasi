@@ -1,5 +1,6 @@
 from helusers.oidc import ApiTokenAuthentication as HelApiTokenAuth
 from django.conf import settings
+from django.utils import timezone
 
 class ApiTokenAuthentication(HelApiTokenAuth):
     def __init__(self, *args, **kwargs):
@@ -20,5 +21,7 @@ class ApiTokenAuthentication(HelApiTokenAuth):
         else:
             user.has_strong_auth = False
 
+        user.last_login = timezone.now()
+        user.notified_about_expiration = False
         user.save()
         return (user, auth)

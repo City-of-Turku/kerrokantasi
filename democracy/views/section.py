@@ -297,7 +297,7 @@ class SectionCreateUpdateSerializer(serializers.ModelSerializer, TranslatableSer
 
             if pk:
                 try:
-                    if self.instance is not None:
+                    if self.instance is not None or self.context['request'].data.get('isNew'):
                         # only allow orphan files or files within this section already
                         file = SectionFile.objects.filter(Q(section=None) | (Q(section=self.instance))).get(pk=pk)
                     else:  # Creating a copy of the hearing

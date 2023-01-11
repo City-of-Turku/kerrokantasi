@@ -180,3 +180,38 @@ HEARING_REPORT_PUBLIC_AUTHOR_NAMES=True
 
 # Hearing report theming. Default is whitelabel
 # HEARING_REPORT_THEME=whitelabel
+
+# USER_EXPIRATION_DAYS: 
+#   How long until user account is considered expired,
+#   Expired users are polled by command: clean_expired_users
+#   Default: 365
+USER_EXPIRATION_DAYS=365
+
+# Email settings for Kerrokantasi
+#
+#
+
+# EMAIL_HOST: 
+#    SMTP Server
+#    Default: None
+#EMAIL_HOST=smtp.server.address
+
+# EMAIL_PORT: 
+#    SMTP Port
+#    Default: 25
+EMAIL_PORT=25
+
+# EMAIL_ENABLED: 
+#    Send emails
+#    Default: False
+EMAIL_ENABLED=False
+
+# EMAIL_FROM: 
+#    From email
+#    Default: 'noreply@site.domain'
+#EMAIL_FROM=noreply@site.domain
+
+# USE_DJANGO_SMTP_BACKEND: 
+#    Use Django provided SMTP backend or print to console
+#    Default: False
+USE_DJANGO_SMTP_BACKEND=False

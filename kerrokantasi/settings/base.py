@@ -69,7 +69,7 @@ env = environ.Env(
     DEFAULT_MAP_COORDINATES=(tuple, (60.192059, 24.945831)),  # Coordinates of Helsinki
     DEFAULT_MAP_ZOOM=(int, 11),
     # Authentication settings
-    OIDC_API_AUDIENCE=(str, ''),
+    OIDC_API_AUDIENCE=(list, []),
     OIDC_API_SCOPE_PREFIX=(str, ''),
     OIDC_API_REQUIRE_SCOPE_FOR_AUTHENTICATION=(bool, True),
     OIDC_API_ISSUER=(str, ''),
@@ -87,6 +87,7 @@ env = environ.Env(
     EMAIL_FROM=(str, ''),
     EMAIL_HOST=(str, ''),
     EMAIL_PORT=(int, 25),
+    KERROKANTASI_MOD_TOOL_CLIENT_ID=(str, ''),
 )
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -327,6 +328,8 @@ OIDC_API_TOKEN_AUTH = {
     'REQUIRE_API_SCOPE_FOR_AUTHENTICATION': env('OIDC_API_REQUIRE_SCOPE_FOR_AUTHENTICATION'),
     'ISSUER': env('OIDC_API_ISSUER'),
 }
+
+KERROKANTASI_MOD_TOOL_CLIENT_ID = env('KERROKANTASI_MOD_TOOL_CLIENT_ID')
 
 OIDC_AUTH = {"OIDC_LEEWAY": 60 * 60}
 STRONG_AUTH_PROVIDERS = env('STRONG_AUTH_PROVIDERS')

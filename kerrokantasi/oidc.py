@@ -1,4 +1,4 @@
-from helusers.oidc import ApiTokenAuthentication as HelApiTokenAuth
+from helusers.oidc import ApiTokenAuthentication as HelApiTokenAuth, AuthenticationFailed
 from django.conf import settings
 from django.utils import timezone
 
@@ -14,6 +14,10 @@ class ApiTokenAuthentication(HelApiTokenAuth):
         payload = self.decode_jwt(jwt_value)
         user, auth = super(ApiTokenAuthentication, self).authenticate(request)
 
+        user_is_staff = user.admin_organizations.count() > 0 or user.is_staff
+        if not user_is_staff and payload.get('aud') == settings.KERROKANTASI_MOD_TOOL_CLIENT_ID:
+            raise AuthenticationFailed()
+
         # amr (Authentication Methods References) should contain the used auth 
         # provider name e.g. suomifi
         if payload.get('amr') in settings.STRONG_AUTH_PROVIDERS:
@@ -25,3 +29,6 @@ class ApiTokenAuthentication(HelApiTokenAuth):
         user.notified_about_expiration = False
         user.save()
         return (user, auth)
+    
+    def get_audiences(self, api_token):
+        return self.settings.AUDIENCE

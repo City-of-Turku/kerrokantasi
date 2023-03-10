@@ -1075,7 +1075,6 @@ def test_detail_hearing_visible_with_auth_method_restriction_for_org_user(
     Tests that hearing with auth method visibility restriction can always be seen by
     staff users in hearing's organization
     """
-    print(f'{endpoint}{hearing_with_auth_method_restriction.id}')
     response = steve_staff_api_client.get(f'{endpoint}{hearing_with_auth_method_restriction.id}/')
     data = get_data_from_response(response)
     assert hearing_with_auth_method_restriction.id == data.get('id')

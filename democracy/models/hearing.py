@@ -20,6 +20,7 @@ from democracy.utils.geo import get_geometry_from_geojson
 from .base import BaseModelManager, StringIdBaseModel
 from .organization import ContactPerson, Organization
 from .project import ProjectPhase
+from .auth_method import AuthMethod
 
 
 class HearingQueryset(TranslatableQuerySet):
@@ -59,6 +60,13 @@ class Hearing(StringIdBaseModel, TranslatableModel):
     contact_persons = models.ManyToManyField(ContactPerson, verbose_name=_('contact persons'), related_name='hearings')
     project_phase = models.ForeignKey(ProjectPhase, verbose_name=_('project phase'), related_name='hearings',
                                       on_delete=models.PROTECT, null=True, blank=True)
+    visible_for_auth_methods = models.ManyToManyField(
+        AuthMethod,
+        verbose_name=_('Visible for authentication methods'),
+        help_text=_('Only users who use given authentication methods are allowed to see this hearing'),
+        related_name='hearings',
+        blank=True
+    )
 
     objects = BaseModelManager.from_queryset(HearingQueryset)()
     original_manager = models.Manager()
@@ -118,9 +126,17 @@ class Hearing(StringIdBaseModel, TranslatableModel):
         except ObjectDoesNotExist:
             return None
 
-    def is_visible_for(self, user):
+    def is_visible_for(self, user, amr=None):
         if self.published and self.open_at < now():
-            return True
+            visible_for_auth_methods = self.visible_for_auth_methods.all()
+            if visible_for_auth_methods:
+                if not user.is_authenticated:
+                    return False
+                for auth_method in visible_for_auth_methods:
+                    if auth_method.amr == amr:
+                        return True
+            else:
+                return True
         if not user.is_authenticated:
             return False
         if user.is_superuser:

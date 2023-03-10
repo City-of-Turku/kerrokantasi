@@ -4,6 +4,7 @@ from .section import Section, SectionComment, SectionImage, SectionFile, Section
 from .section import SectionPoll, SectionPollOption, SectionPollAnswer
 from .organization import ContactPerson, Organization, OrganizationLog
 from .project import Project, ProjectPhase
+from .auth_method import AuthMethod
 
 __all__ = [
     "ContactPerson",
@@ -21,4 +22,5 @@ __all__ = [
     "Project",
     "ProjectPhase",
     "SectionFile",
+    "AuthMethod",
 ]

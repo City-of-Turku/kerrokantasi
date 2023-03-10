@@ -12,7 +12,7 @@ from reversion.models import Version
 
 from democracy.enums import Commenting, InitialSectionType
 from democracy.factories.hearing import SectionCommentFactory
-from democracy.models import Hearing, Label, Section, SectionType
+from democracy.models import Hearing, Label, Section, SectionType, Organization
 from democracy.models.section import SectionComment
 from democracy.tests.conftest import default_comment_content, default_lang_code, default_geojson_feature
 from democracy.tests.utils import (
@@ -1132,6 +1132,94 @@ def test_root_endpoint_filtering_by_hearing_visibility(api_client, default_heari
     response = api_client.get('/v1/comment/')
     response_data = get_data_from_response(response)['results']
     assert len(response_data) == 0
+
+
+@pytest.mark.django_db
+def test_root_endpoint_filtering_by_hearing_auth_method_visibility_anon(
+        api_client, hearing_with_auth_method_restriction
+    ):
+    response = api_client.get('/v1/comment/')
+    response_data = get_data_from_response(response)['results']
+    assert len(response_data) == 0
+
+
+@pytest.mark.django_db
+def test_root_endpoint_filtering_by_hearing_auth_method_visibility_normal_user(
+        jane_doe_api_client, hearing_with_auth_method_restriction
+    ):
+    response = jane_doe_api_client.get('/v1/comment/')
+    response_data = get_data_from_response(response)['results']
+    assert len(response_data) == 0
+
+
+@pytest.mark.django_db
+def test_root_endpoint_filtering_by_hearing_auth_method_visibility_correct_org_user(
+        steve_staff_api_client, hearing_with_auth_method_restriction
+    ):
+    comment_count = SectionComment.objects.count()
+    response = steve_staff_api_client.get('/v1/comment/')
+    response_data = get_data_from_response(response)['results']
+    assert len(response_data) == comment_count
+
+
+@pytest.mark.django_db
+def test_root_endpoint_filtering_by_hearing_auth_method_visibility_wrong_org_user(
+        steve_staff_api_client, hearing_with_auth_method_restriction
+    ):
+    other_org = Organization.objects.create(name='Other Org')
+    hearing_with_auth_method_restriction.organization = other_org
+    hearing_with_auth_method_restriction.save()
+    response = steve_staff_api_client.get('/v1/comment/')
+    response_data = get_data_from_response(response)['results']
+    assert len(response_data) == 0
+
+
+@pytest.mark.django_db
+def test_detail_endpoint_filtering_by_hearing_auth_method_visibility_anon(
+        api_client, hearing_with_auth_method_restriction
+    ):
+    section = hearing_with_auth_method_restriction.get_main_section()
+    comment = section.comments.all()[0]
+    url = get_root_detail_url(comment)
+    response = api_client.get(url)
+    assert response.status_code == 404
+
+
+@pytest.mark.django_db
+def test_detail_endpoint_filtering_by_hearing_auth_method_visibility_normal_user(
+        jane_doe_api_client, hearing_with_auth_method_restriction
+    ):
+    section = hearing_with_auth_method_restriction.get_main_section()
+    comment = section.comments.all()[0]
+    url = get_root_detail_url(comment)
+    response = jane_doe_api_client.get(url)
+    assert response.status_code == 404
+
+
+@pytest.mark.django_db
+def test_detail_endpoint_filtering_by_hearing_auth_method_visibility_correct_org_user(
+        steve_staff_api_client, hearing_with_auth_method_restriction
+    ):
+    section = hearing_with_auth_method_restriction.get_main_section()
+    comment = section.comments.all()[0]
+    url = get_root_detail_url(comment)
+    response = steve_staff_api_client.get(url)
+    response_data = get_data_from_response(response)
+    assert response_data.get('id') == comment.id
+
+
+@pytest.mark.django_db
+def test_detail_endpoint_filtering_by_hearing_auth_method_visibility_wrong_org_user(
+        steve_staff_api_client, hearing_with_auth_method_restriction
+    ):
+    other_org = Organization.objects.create(name='Other Org')
+    hearing_with_auth_method_restriction.organization = other_org
+    hearing_with_auth_method_restriction.save()
+    section = hearing_with_auth_method_restriction.get_main_section()
+    comment = section.comments.all()[0]
+    url = get_root_detail_url(comment)
+    response = steve_staff_api_client.get(url)
+    assert response.status_code == 404
 
 
 @pytest.mark.django_db

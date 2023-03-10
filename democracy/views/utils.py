@@ -141,6 +141,8 @@ def filter_by_hearing_visible(queryset, request, hearing_lookup='hearing', inclu
     filters['%sopen_at__lte' % hearing_lookup] = now()
     q = Q(**filters)
 
+    amr = None
+    organizations = None
     if user.is_authenticated:
         organizations = user.admin_organizations.all()
         if organizations.exists():
@@ -150,7 +152,18 @@ def filter_by_hearing_visible(queryset, request, hearing_lookup='hearing', inclu
             # include items belonging to no hearings
             q |= Q(**{'%sisnull' % hearing_lookup: True})
 
-    return queryset.filter(q)
+        auth = request.auth or {}
+        amr = auth.get('data', {}).get('amr')
+
+    queryset = queryset.filter(q)
+    if organizations is not None and organizations.exists():
+        return queryset.filter(
+            Q(**{'%sorganization__in' % hearing_lookup: organizations})
+            | Q(**{'%svisible_for_auth_methods__isnull' % hearing_lookup: True})
+            | Q(**{'%svisible_for_auth_methods__amr' % hearing_lookup: amr}))
+    return queryset.filter(
+        Q(**{'%svisible_for_auth_methods__isnull' % hearing_lookup: True})
+        | Q(**{'%svisible_for_auth_methods__amr' % hearing_lookup: amr}))
 
 
 class NestedPKRelatedField(PrimaryKeyRelatedField):

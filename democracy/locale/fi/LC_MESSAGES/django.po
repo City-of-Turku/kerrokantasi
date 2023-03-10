@@ -273,3 +273,18 @@ msgstr "Lisätty: %(email)s"
 
 msgid "Removed: %(email)s"
 msgstr "Poistettu: %(email)s"
+
+msgid "Authentication method"
+msgstr "Tunnistustapa"
+
+msgid "Authentication methods"
+msgstr "Tunnistustavat"
+
+msgid "id of the authentication method"
+msgstr "Tunnistustavan amr-tunniste"
+
+msgid "Visible for authentication methods"
+msgstr "Näkyvissä näille tunnistustavoille"
+
+msgid "Only users who use given authentication methods are allowed to see this hearing"
+msgstr "Vain käyttäjät, jotka ovat tunnistautuneet annetuilla tunnistustavoilla, voivat nähdä tämän kuulemisen"

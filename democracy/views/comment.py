@@ -319,7 +319,7 @@ class BaseCommentViewSet(AdminsSeeUnpublishedMixin, viewsets.ModelViewSet):
 
 
 
-    @action(detail=True, methods=['post'])
+    @action(detail=True, methods=['delete'])
     def delete(self, request, **kwargs):
         instance = self.get_object()
         user = request.user

@@ -14,8 +14,7 @@ class ApiTokenAuthentication(HelApiTokenAuth):
         payload = self.decode_jwt(jwt_value)
         user, auth = super(ApiTokenAuthentication, self).authenticate(request)
 
-        user_is_staff = user.admin_organizations.count() > 0 or user.is_staff
-        if not user_is_staff and payload.get('aud') == settings.KERROKANTASI_MOD_TOOL_CLIENT_ID:
+        if not user.is_staff and payload.get('aud') == settings.KERROKANTASI_MOD_TOOL_CLIENT_ID:
             raise AuthenticationFailed()
 
         # amr (Authentication Methods References) should contain the used auth 

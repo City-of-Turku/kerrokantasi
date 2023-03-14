@@ -286,7 +286,7 @@ class BaseCommentViewSet(AdminsSeeUnpublishedMixin, viewsets.ModelViewSet):
         instance = self.get_object()
         user = request.user
         # Only hearing organization admins can flag comments
-        if instance.section.hearing.organization not in user.admin_organizations.all() and not user.is_staff:
+        if instance.section.hearing.organization not in user.admin_organizations.all():
             return response.Response(
                 {'status': "You don't have authorization to flag this comment"}, status=status.HTTP_403_FORBIDDEN
             )
@@ -323,7 +323,7 @@ class BaseCommentViewSet(AdminsSeeUnpublishedMixin, viewsets.ModelViewSet):
     def delete(self, request, **kwargs):
         instance = self.get_object()
         user = request.user
-        if not user.is_staff:
+        if instance.section.hearing.organization not in user.admin_organizations.all() and not user.is_staff:
             return response.Response(
                 {'status': "You don't have authorization to delete this comment"}, status=status.HTTP_403_FORBIDDEN
             )
@@ -336,7 +336,7 @@ class BaseCommentViewSet(AdminsSeeUnpublishedMixin, viewsets.ModelViewSet):
     def unflag(self, request, **kwargs):
         instance = self.get_object()
         user = request.user
-        if not user.is_staff:
+        if instance.section.hearing.organization not in user.admin_organizations.all() and not user.is_staff:
             return response.Response(
                 {'status': "You don't have authorization to unflag this comment"}, status=status.HTTP_403_FORBIDDEN
             )

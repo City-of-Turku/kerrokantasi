@@ -479,7 +479,8 @@ class HearingViewSet(AdminsSeeUnpublishedMixin, viewsets.ModelViewSet):
         amr = None
         if user.is_authenticated:
             auth = self.request.auth or {}
-            amr = auth.get('data', {}).get('amr')
+            if hasattr(auth, 'data'):
+                amr = auth.data.get('amr')
         if not obj.is_visible_for(user, amr):
             preview_code = self.request.query_params.get('preview')
             if not preview_code or preview_code != obj.preview_code:

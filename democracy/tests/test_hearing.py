@@ -1044,6 +1044,22 @@ def test_list_hearing_not_visible_with_auth_method_restriction_for_incorrect_org
 
 
 @pytest.mark.django_db
+def test_list_hearing_visible_with_auth_method_restriction_correct_amount(
+        hearing_with_auth_method_restriction, steve_staff_api_client, auth_method_test_auth
+    ):
+    """
+    Tests that hearings with auth method visibility restriction are returned
+    correctly and don't get multiplied when hearing has many auth method restrictions
+    """
+    hearing_with_auth_method_restriction.visible_for_auth_methods.add(auth_method_test_auth)
+    response = steve_staff_api_client.get(list_endpoint)
+    data = get_data_from_response(response)
+    ids = [hearing['id'] for hearing in data['results']]
+    assert bool(hearing_with_auth_method_restriction.id in ids) == True
+    assert len(data['results']) == 1
+
+
+@pytest.mark.django_db
 def test_detail_hearing_not_visible_without_correct_auth_method_unauthorized_user(
         hearing_with_auth_method_restriction, jane_doe_api_client
     ):

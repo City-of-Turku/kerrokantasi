@@ -70,11 +70,22 @@ def contact_person(default_organization):
 @pytest.fixture()
 def auth_method_library_card():
     """
-    Fixture for a single authentication method in some authentication service
+    Fixture for a single authentication method "Library card" in some authentication service
     """
     return AuthMethod.objects.create(
         name='Library Card',
         amr='lib_card'
+    )
+
+
+@pytest.fixture()
+def auth_method_test_auth():
+    """
+    Fixture for a single authentication method "Test auth" in some authentication service
+    """
+    return AuthMethod.objects.create(
+        name='Test Auth',
+        amr='test_amr'
     )
 
 

@@ -179,7 +179,9 @@ class HearingAdmin(NestedModelAdminMixin, HearingGeoAdmin, TranslatableAdmin):
             "fields": ("project_phase",)
         }),
         (_("Availability"), {
-            "fields": ("published", "open_at", "close_at", "force_closed")
+            "fields": (
+                    "published", "open_at", "close_at", "force_closed","visible_for_auth_methods"
+                )
         }),
         (_("Area"), {
             "fields": ("geometry",)
@@ -452,6 +454,11 @@ def get_any_language(obj, attr_name):
     return translation
 
 
+class AuthMethodAdmin(admin.ModelAdmin):
+    exclude = ('published',)
+    readonly_fields = ('id',)
+
+
 # Wire it up!
 
 
@@ -463,3 +470,4 @@ admin.site.register(models.ContactPerson, ContactPersonAdmin)
 admin.site.register(models.Project, ProjectAdmin)
 admin.site.register(models.ProjectPhase, ProjectPhaseAdmin)
 admin.site.register(models.SectionComment, CommentAdmin)
+admin.site.register(models.AuthMethod, AuthMethodAdmin)

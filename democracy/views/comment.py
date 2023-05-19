@@ -316,3 +316,34 @@ class BaseCommentViewSet(AdminsSeeUnpublishedMixin, viewsets.ModelViewSet):
             return response.Response({'status': 'Removed vote'}, status=status.HTTP_204_NO_CONTENT)
 
         return response.Response({'status': 'You have not voted for this comment'}, status=status.HTTP_304_NOT_MODIFIED)
+
+
+
+    @action(detail=True, methods=['delete'])
+    def delete(self, request, **kwargs):
+        instance = self.get_object()
+        user = request.user
+        if instance.section.hearing.organization not in user.admin_organizations.all() and not user.is_staff:
+            return response.Response(
+                {'status': "You don't have authorization to delete this comment"}, status=status.HTTP_403_FORBIDDEN
+            )
+        
+        instance.soft_delete(user=request.user)
+        return response.Response({'status': 'Comment deleted'})
+    
+
+    @action(detail=True, methods=['post'])
+    def unflag(self, request, **kwargs):
+        instance = self.get_object()
+        user = request.user
+        if instance.section.hearing.organization not in user.admin_organizations.all() and not user.is_staff:
+            return response.Response(
+                {'status': "You don't have authorization to unflag this comment"}, status=status.HTTP_403_FORBIDDEN
+            )
+        if not instance.flagged_at:
+            return response.Response({'status': 'Not flagged'}, status=status.HTTP_304_NOT_MODIFIED)
+
+        instance.flagged_at = None
+        instance.flagged_by = None
+        instance.save()
+        return response.Response({'status': 'Comment unflagged'})

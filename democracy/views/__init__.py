@@ -5,6 +5,7 @@ from .project import ProjectViewSet
 from .section import ImageViewSet, SectionViewSet, RootSectionViewSet, FileViewSet, ServeFileView
 from .section_comment import SectionCommentViewSet, CommentViewSet
 from .user import UserDataViewSet
+from .auth_method import AuthMethodViewSet
 
 __all__ = [
     "ContactPersonViewSet",
@@ -19,4 +20,5 @@ __all__ = [
     "UserDataViewSet",
     "FileViewSet",
     "ServeFileView",
+    "AuthMethodViewSet",
 ]

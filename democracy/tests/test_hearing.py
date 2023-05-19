@@ -984,6 +984,133 @@ def test_hearing_filters(admin_api_client, default_hearing, updates, filters, ex
     assert data['count'] == expected_count
 
 
+@pytest.mark.django_db
+def test_list_hearing_not_visible_without_correct_auth_method_unauthorized_user(
+        hearing_with_auth_method_restriction, jane_doe_api_client
+    ):
+    """
+    Tests that hearings with auth method visibility restriction cannot be seen by users
+    without correct auth method
+    """
+    response = jane_doe_api_client.get(list_endpoint)
+    data = get_data_from_response(response)
+    ids = [hearing['id'] for hearing in data['results']]
+    assert bool(hearing_with_auth_method_restriction.id in ids) == False
+
+
+@pytest.mark.django_db
+def test_list_hearing_not_visible_without_correct_auth_method_anonymous_user(
+        hearing_with_auth_method_restriction, api_client,
+    ):
+    """
+    Tests that hearings with auth method visibility restriction cannot be seen by
+    anonymous users
+    """
+    response = api_client.get(list_endpoint)
+    data = get_data_from_response(response)
+    ids = [hearing['id'] for hearing in data['results']]
+    assert bool(hearing_with_auth_method_restriction.id in ids) == False
+
+
+@pytest.mark.django_db
+def test_list_hearing_visible_with_auth_method_restriction_for_org_user(
+        hearing_with_auth_method_restriction, steve_staff_api_client
+    ):
+    """
+    Tests that hearings with auth method visibility restriction can always be seen by
+    staff users in hearing's organization
+    """
+    response = steve_staff_api_client.get(list_endpoint)
+    data = get_data_from_response(response)
+    ids = [hearing['id'] for hearing in data['results']]
+    assert bool(hearing_with_auth_method_restriction.id in ids) == True
+
+
+@pytest.mark.django_db
+def test_list_hearing_not_visible_with_auth_method_restriction_for_incorrect_org_user(
+        hearing_with_auth_method_restriction, steve_staff_api_client
+    ):
+    """
+    Tests that hearings with auth method visibility restriction cannot be seen by
+    staff users not in hearing's organization
+    """
+    other_org = Organization.objects.create(name='Other Org')
+    hearing_with_auth_method_restriction.organization = other_org
+    hearing_with_auth_method_restriction.save()
+    response = steve_staff_api_client.get(list_endpoint)
+    data = get_data_from_response(response)
+    ids = [hearing['id'] for hearing in data['results']]
+    assert bool(hearing_with_auth_method_restriction.id in ids) == False
+
+
+@pytest.mark.django_db
+def test_list_hearing_visible_with_auth_method_restriction_correct_amount(
+        hearing_with_auth_method_restriction, steve_staff_api_client, auth_method_test_auth
+    ):
+    """
+    Tests that hearings with auth method visibility restriction are returned
+    correctly and don't get multiplied when hearing has many auth method restrictions
+    """
+    hearing_with_auth_method_restriction.visible_for_auth_methods.add(auth_method_test_auth)
+    response = steve_staff_api_client.get(list_endpoint)
+    data = get_data_from_response(response)
+    ids = [hearing['id'] for hearing in data['results']]
+    assert bool(hearing_with_auth_method_restriction.id in ids) == True
+    assert len(data['results']) == 1
+
+
+@pytest.mark.django_db
+def test_detail_hearing_not_visible_without_correct_auth_method_unauthorized_user(
+        hearing_with_auth_method_restriction, jane_doe_api_client
+    ):
+    """
+    Tests that hearing with auth method visibility restriction cannot be seen by users
+    without correct auth method
+    """
+    response = jane_doe_api_client.get(f'{endpoint}{hearing_with_auth_method_restriction.id}/')
+    assert response.status_code == 404
+
+
+@pytest.mark.django_db
+def test_detail_hearing_not_visible_without_correct_auth_method_anonymous_user(
+        hearing_with_auth_method_restriction, api_client,
+    ):
+    """
+    Tests that hearing with auth method visibility restriction cannot be seen by
+    anonymous users
+    """
+    response = api_client.get(f'{endpoint}{hearing_with_auth_method_restriction.id}/')
+    assert response.status_code == 404
+
+
+@pytest.mark.django_db
+def test_detail_hearing_visible_with_auth_method_restriction_for_org_user(
+        hearing_with_auth_method_restriction, steve_staff_api_client
+    ):
+    """
+    Tests that hearing with auth method visibility restriction can always be seen by
+    staff users in hearing's organization
+    """
+    response = steve_staff_api_client.get(f'{endpoint}{hearing_with_auth_method_restriction.id}/')
+    data = get_data_from_response(response)
+    assert hearing_with_auth_method_restriction.id == data.get('id')
+
+
+@pytest.mark.django_db
+def test_detail_hearing_not_visible_with_auth_method_restriction_for_incorrect_org_user(
+        hearing_with_auth_method_restriction, steve_staff_api_client
+    ):
+    """
+    Tests that hearing with auth method visibility restriction cannot be seen by
+    staff users not in hearing's organization
+    """
+    other_org = Organization.objects.create(name='Other Org')
+    hearing_with_auth_method_restriction.organization = other_org
+    hearing_with_auth_method_restriction.save()
+    response = steve_staff_api_client.get(f'{endpoint}{hearing_with_auth_method_restriction.id}/')
+    assert response.status_code == 404
+
+
 def assert_hearing_equals(data, posted, user, create=True):
     # posted contact person data need only contain the id, even though the api returns all fields
     persons_included = data.pop('contact_persons')
@@ -1761,4 +1888,3 @@ def test_get_project_data_in_hearing(default_hearing, api_client):
         assert phase['is_active'] == is_active_phase
         if is_active_phase:
             assert default_hearing.slug in phase['hearings']
-

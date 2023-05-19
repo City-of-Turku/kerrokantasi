@@ -12,7 +12,9 @@ from rest_framework.exceptions import NotFound, PermissionDenied, ValidationErro
 from rest_framework.settings import api_settings
 
 from democracy.enums import InitialSectionType
-from democracy.models import ContactPerson, Hearing, Label, Section, SectionImage, Project, Organization
+from democracy.models import (
+    ContactPerson, Hearing, Label, Section, SectionImage, Project, Organization, AuthMethod
+)
 from democracy.pagination import DefaultLimitPagination
 from democracy.renderers import GeoJSONRenderer
 from democracy.views.base import AdminsSeeUnpublishedMixin
@@ -23,6 +25,7 @@ from democracy.views.reports_v2.hearing_report_powerpoint import HearingReportPo
 from democracy.views.section import (
     SectionCreateUpdateSerializer, SectionFieldSerializer, SectionImageSerializer, SectionSerializer
 )
+from democracy.views.auth_method import AuthMethodSerializer
 from democracy.views.utils import GeoJSONField, GeometryBboxFilterBackend, TranslatableSerializer, get_translation_list
 from .hearing_report import HearingReport
 from .utils import NestedPKRelatedField, filter_by_hearing_visible
@@ -51,6 +54,11 @@ class HearingCreateUpdateSerializer(serializers.ModelSerializer, TranslatableSer
                                            serializer=ContactPersonSerializer)
     labels = NestedPKRelatedField(queryset=Label.objects.all(), many=True, expanded=True, serializer=LabelSerializer)
 
+    visible_for_auth_methods = NestedPKRelatedField(
+        queryset=AuthMethod.objects.all(), many=True, expanded=True,
+        serializer=AuthMethodSerializer, required=False
+    )
+
     organization = serializers.SlugRelatedField(
         read_only=True,
         slug_field='name'
@@ -66,6 +74,7 @@ class HearingCreateUpdateSerializer(serializers.ModelSerializer, TranslatableSer
             'servicemap_url', 'sections',
             'closed', 'geojson', 'organization', 'slug',
             'contact_persons', 'labels', 'project',
+            'visible_for_auth_methods',
         ]
 
     def __init__(self, *args, **kwargs):
@@ -268,6 +277,7 @@ class HearingSerializer(serializers.ModelSerializer, TranslatableSerializer):
     contact_persons = ContactPersonSerializer(many=True, read_only=True)
     default_to_fullscreen = serializers.SerializerMethodField()
     project = serializers.SerializerMethodField()
+    visible_for_auth_methods = AuthMethodSerializer(many=True, required=False)
 
     def _get_main_section(self, hearing):
         prefetched_mains = getattr(hearing, 'main_section_list', [])
@@ -337,7 +347,8 @@ class HearingSerializer(serializers.ModelSerializer, TranslatableSerializer):
             'abstract', 'title', 'id', 'borough', 'n_comments',
             'published', 'labels', 'open_at', 'close_at', 'created_at',
             'servicemap_url', 'sections', 'preview_url', 'project',
-            'closed', 'geojson', 'organization', 'slug', 'main_image', 'contact_persons', 'default_to_fullscreen',
+            'closed', 'geojson', 'organization', 'slug', 'main_image', 'contact_persons',
+            'default_to_fullscreen', 'visible_for_auth_methods',
         ]
         read_only_fields = ['preview_url']
         translation_lang = [lang['code'] for lang in settings.PARLER_LANGUAGES[None]]
@@ -465,13 +476,18 @@ class HearingViewSet(AdminsSeeUnpublishedMixin, viewsets.ModelViewSet):
         user = self.request.user
 
         preview_code = None
-        if not obj.is_visible_for(user):
+        amr = None
+        if user.is_authenticated:
+            auth = self.request.auth or {}
+            if hasattr(auth, 'data'):
+                amr = auth.data.get('amr')
+        if not obj.is_visible_for(user, amr):
             preview_code = self.request.query_params.get('preview')
             if not preview_code or preview_code != obj.preview_code:
                 raise NotFound()
 
         # require preview_code or superuser status to show a not yet opened hearing
-        if not (preview_code or obj.is_visible_for(user)):
+        if not (preview_code or obj.is_visible_for(user, amr)):
             raise NotFound()
 
         self.check_object_permissions(self.request, obj)

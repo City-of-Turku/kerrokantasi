@@ -8,7 +8,10 @@ from rest_framework.test import APIClient
 
 from democracy.enums import Commenting, InitialSectionType, CommentingMapTools
 from democracy.factories.hearing import HearingFactory, LabelFactory
-from democracy.models import ContactPerson, Hearing, Label, Project, ProjectPhase, Section, SectionFile, SectionType, Organization
+from democracy.models import (
+    ContactPerson, Hearing, Label, Project, ProjectPhase, Section, SectionFile, SectionType,
+    Organization, AuthMethod
+)
 from democracy.tests.utils import FILES, assert_ascending_sequence, create_default_images, create_default_files, get_file_path
 
 
@@ -61,6 +64,28 @@ def contact_person(default_organization):
         phone='555-555',
         email='john@contact.eu',
         organization=default_organization
+    )
+
+
+@pytest.fixture()
+def auth_method_library_card():
+    """
+    Fixture for a single authentication method "Library card" in some authentication service
+    """
+    return AuthMethod.objects.create(
+        name='Library Card',
+        amr='lib_card'
+    )
+
+
+@pytest.fixture()
+def auth_method_test_auth():
+    """
+    Fixture for a single authentication method "Test auth" in some authentication service
+    """
+    return AuthMethod.objects.create(
+        name='Test Auth',
+        amr='test_amr'
     )
 
 
@@ -164,6 +189,44 @@ def hearing_without_comments(contact_person, default_organization, default_proje
 
     assert_ascending_sequence([s.ordering for s in hearing.sections.all()])
     hearing.contact_persons.add(contact_person)
+
+    return hearing
+
+@pytest.fixture()
+def hearing_with_auth_method_restriction(
+        contact_person, default_organization, default_project, auth_method_library_card, john_doe
+    ):
+    """
+    Fixture for a hearing with multiple sections and its visibility is restricted by
+    an auth method. Commenting is open.
+    """
+    hearing = Hearing.objects.create(
+        title='Hearing with auth method restriction',
+        open_at=now() - datetime.timedelta(days=1),
+        close_at=now() + datetime.timedelta(days=1),
+        slug='auth-method-hearing-slug',
+        organization=default_organization,
+        project_phase=default_project.phases.all()[0],
+    )
+
+    for x in range(1, 4):
+        section_type = (InitialSectionType.MAIN if x == 1 else InitialSectionType.SCENARIO)
+        section = Section.objects.create(
+            abstract='Section %d abstract' % x,
+            hearing=hearing,
+            type=SectionType.objects.get(identifier=section_type),
+            commenting=Commenting.OPEN,
+            commenting_map_tools=CommentingMapTools.ALL
+        )
+        create_default_images(section)
+        create_default_files(section)
+        section.comments.create(created_by=john_doe, content=default_comment_content[::-1])
+        section.comments.create(created_by=john_doe, content=red_comment_content[::-1])
+        section.comments.create(created_by=john_doe, content=green_comment_content[::-1])
+
+    assert_ascending_sequence([s.ordering for s in hearing.sections.all()])
+    hearing.contact_persons.add(contact_person)
+    hearing.visible_for_auth_methods.add(auth_method_library_card)
 
     return hearing
 

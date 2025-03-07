@@ -20,3 +20,11 @@
 !requirements*
 !setup.cfg
 !package.json
+!sshd_config
+
+*.env
+.vscode
+AzureUtil.ps1
+*.bicep
+*.bicepparam
+secrets.*

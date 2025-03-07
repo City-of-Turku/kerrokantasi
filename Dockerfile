@@ -20,7 +20,7 @@ ENV PYTHONUNBUFFERED True
 
 # less & netcat-openbsd are there for in-container manual debugging
 # kerrokantasi needs gdal
-RUN apt-get update && apt-get install -y postgresql-client less netcat-openbsd gettext locales gdal-bin python-gdal python3-gdal
+RUN apt-get update && apt-get install -y postgresql-client less netcat-openbsd gettext locales gdal-bin python-gdal python3-gdal dialog openssh-server
 
 # we need the Finnish locale built
 RUN sed -i 's/^# *\(fi_FI.UTF-8\)/\1/' /etc/locale.gen
@@ -39,6 +39,10 @@ COPY requirements.txt ./
 # deploy/requirements.txt must reference the base requirements
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Enable SSH
+RUN echo "root:Docker!" | chpasswd
+COPY sshd_config /etc/ssh/
+
 COPY . .
 
 # Statics are kept inside container image for serving using whitenoise
@@ -50,6 +54,7 @@ RUN mkdir -p /srv/static && python manage.py collectstatic
 # Usually this would be some sort of volume
 # RUN mkdir -p /srv/media && chown hauki:hauki /srv/media
 
+RUN chmod a+x ./deploy/entrypoint.sh
 ENTRYPOINT ["deploy/entrypoint.sh"]
 
 # Both production and dev servers listen on port 8000
@@ -60,11 +65,7 @@ FROM appbase as development
 
 RUN pip install --no-cache-dir -r requirements-dev.txt
 
-USER kerrokantasi
-
 # And the production image
 FROM appbase as production
 
 ENV DEBUG=False
-
-USER kerrokantasi

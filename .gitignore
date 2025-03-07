@@ -52,3 +52,6 @@ protected_media/
 media/
 .vscode
 .python-version
+
+# Secrets
+secrets.*

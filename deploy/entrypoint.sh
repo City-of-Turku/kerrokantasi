@@ -1,4 +1,12 @@
 #!/bin/bash
+
+
+# Enable SSH and give it access to app setting env variables
+if [[ "$ENABLE_SSH" = "true" ]]; then
+    service ssh start
+    eval $(printenv | sed -n "/^PWD=/!s/^\([^=-]\+\)=\(.*\)$/export \1=\2/p" | sed 's/"/\\\"/g' | sed '/=/s//="/' | sed 's/$/"/' >> /etc/profile)
+fi
+
 TIMESTAMP_FORMAT="+%Y-%m-%d %H:%M:%S"
 
 function _log () {

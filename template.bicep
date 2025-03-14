@@ -71,7 +71,11 @@ param apiAppSettings object = {
   LOGOUT_REDIRECT_URL: apiUrl
   DEFAULT_MAP_COORDINATES: '60.454510,22.264824'
   DEFAULT_MAP_ZOOM: 11
-  EMAIL_URL: 'smtp://smtp.turku.fi:25'
+  USE_DJANGO_SMTP_BACKEND: 'True'
+  EMAIL_ENABLED: 'True'
+  EMAIL_URL: 'smtp://smtp.turku.fi'
+  EMAIL_FROM: 'kerrokantasi@turku.fi'
+  EMAIL_PORT: 587
   OIDC_API_AUDIENCE: 'https://auth.turku.fi/kerrokantasi,29cbb3d4-9e3b-47a1-ac02-ae101e17d48c'
   OIDC_API_SCOPE_PREFIX: 'kerrokantasi'
   OIDC_API_REQUIRE_SCOPE_FOR_AUTHENTICATION: 'False'

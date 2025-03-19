@@ -54,6 +54,11 @@ RUN mkdir -p /srv/static && python manage.py collectstatic
 # Usually this would be some sort of volume
 # RUN mkdir -p /srv/media && chown hauki:hauki /srv/media
 
+# Add cron
+
+RUN echo '22 2 * * * cd /var/www/kerrokantasi-back/app/; /var/www/kerrokantasi-back/venv37/bin/python manage.py clean_expired_users' >> /etc/crontab
+RUN printenv > /etc/environment
+
 RUN chmod a+x ./deploy/entrypoint.sh
 ENTRYPOINT ["deploy/entrypoint.sh"]
 

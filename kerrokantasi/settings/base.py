@@ -44,6 +44,7 @@ env = environ.Env(
     CONN_MAX_AGE=(int, 0),
     ALLOWED_HOSTS=(list, []),
     CSRF_TRUSTED_ORIGINS=(list, []),
+    CLIENT_SECRET=(str, ''),
     ADMINS=(list, []),
     DATABASE_URL=(str, 'postgis:///kerrokantasi'),
     TEST_DATABASE_URL=(str, ""),
@@ -107,6 +108,7 @@ DEBUG = env('DEBUG')
 SECRET_KEY = env('SECRET_KEY')
 ALLOWED_HOSTS = env('ALLOWED_HOSTS')
 CSRF_TRUSTED_ORIGINS = env('CSRF_TRUSTED_ORIGINS')
+CLIENT_SECRET = env('CLIENT_SECRET')
 ADMINS = env('ADMINS')
 
 DATABASES = {

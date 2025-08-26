@@ -50,7 +50,55 @@ param openIdClientId string
 param openIdAudience string
 param openIdAuthority string
 param openIdApiTokenUrl string
+@secure()
+param goforeHelsinki string
+@secure()
+param goforeTampere string
+@secure()
+param goforeVpn string
 
+// TODO separate these into test/prod
+// Prod
+// param apiAppSettings object = {
+//   SECRET_KEY: secretKey
+//   ALLOWED_HOSTS: '${apiInternalUrl},169.254.131.6'
+//   DEBUG: 'False'
+//   CSRF_TRUSTED_ORIGINS: apiUrl
+//   ADMINS: 'admin@anders.fi'
+//   TIER: 'prod'
+//   TRUST_X_FORWARDED_HOST: 'True'
+//   SECURE_PROXY_SSL_HEADER: 'HTTP_X_FORWARDED_PROTO,https'
+//   MEDIA_ROOT: '/var/www/kerrokantasi-back/var/media'
+//   STATIC_ROOT: '/var/www/kerrokantasi-back/var/static'
+//   PROTECTED_ROOT: '/var/www/kerrokantasi-back/var/protected_media'
+//   MEDIA_URL: '/media/'
+//   STATIC_URL: '/static/'
+//   PROTECTED_URL: '/protected_media/'
+//   COOKIE_PREFIX: 'kerrokantasi-backend'
+//   DEMOCRACY_UI_BASE_URL: 'https://kerrokantasi.turku.fi/'
+//   SENDFILE_BACKEND: 'sendfile.backends.simple'
+//   LOGOUT_REDIRECT_URL: apiUrl
+//   DEFAULT_MAP_COORDINATES: '60.454510,22.264824'
+//   DEFAULT_MAP_ZOOM: 11
+//   USE_DJANGO_SMTP_BACKEND: 'True'
+//   EMAIL_ENABLED: 'True'
+//   EMAIL_URL: 'smtp://smtp.turku.fi'
+//   EMAIL_FROM: 'kerrokantasi@turku.fi'
+//   EMAIL_PORT: 587
+//   OIDC_API_AUDIENCE: 'https://auth.turku.fi/kerrokantasi'
+//   OIDC_API_SCOPE_PREFIX: 'kerrokantasi'
+//   OIDC_API_REQUIRE_SCOPE_FOR_AUTHENTICATION: 'True'
+//   OIDC_API_ISSUER: 'https://tunnistamo.turku.fi/openid'
+//   OIDC_API_AUTHORIZATION_FIELD: 'https://auth.turku.fi/'
+//   SOCIAL_AUTH_TUNNISTAMO_KEY: 'https://auth.turku.fi/kerrokantasi'
+//   SOCIAL_AUTH_TUNNISTAMO_SECRET: socialAuthTunnistamoSecret
+//   SOCIAL_AUTH_TUNNISTAMO_OIDC_ENDPOINT: 'https://tunnistamo.turku.fi/openid'
+//   STRONG_AUTH_PROVIDERS: 'turku_suomifi,turku_adfs'
+//   HEARING_REPORT_PUBLIC_AUTHOR_NAMES: 'False'
+//   HEARING_REPORT_THEME: 'turku'
+// }
+
+// Test
 param apiAppSettings object = {
   SECRET_KEY: secretKey
   ALLOWED_HOSTS: '${apiInternalUrl},169.254.131.6' // TODO
@@ -84,12 +132,38 @@ param apiAppSettings object = {
   SOCIAL_AUTH_TUNNISTAMO_KEY: 'https://auth.turku.fi/kerrokantasi'
   SOCIAL_AUTH_TUNNISTAMO_SECRET: socialAuthTunnistamoSecret
   SOCIAL_AUTH_TUNNISTAMO_OIDC_ENDPOINT: 'https://testitunnistamo.turku.fi/openid'
+  
   KERROKANTASI_MOD_TOOL_CLIENT_ID: '29cbb3d4-9e3b-47a1-ac02-ae101e17d48c'
   STRONG_AUTH_PROVIDERS: 'turku_suomifi,turku_adfs'
   HEARING_REPORT_PUBLIC_AUTHOR_NAMES: 'False'
   HEARING_REPORT_THEME: 'turku'
 }
 
+// // Prod
+// param uiAppSettings object = {
+//   CITY_CONFIG: 'kerrokantasi-ui-turku'
+//   KERROKANTASI_API_BASE: apiUrl
+//   HERO_IMAGE_URL: 'https://www.turku.fi/sites/default/files/thumbnails/image/kesarauha.jpg'
+//   PUBLIC_URL: uiUrl
+//   EXPRESSJS_SESSION_SECRET: expressJsSessionSecret
+//   OPENID_CLIENT_ID: openIdClientId
+//   OPENID_AUDIENCE: openIdAudience
+//   OPENID_AUTHORITY: openIdAuthority
+//   OPENID_APITOKEN_URL: openIdApiTokenUrl
+//   SHOW_ACCESSIBILITY_INFO: 'true'
+//   SHOW_SOCIAL_MEDIA_SHARING: 'false'
+//   ENABLE_HIGHCONTRAST: 'true'
+//   ENABLE_COOKIES: 'true'
+//   ENABLE_COOKIEBOT: 'true'
+//   COOKIEBOT_DATA_CBID: '92860cd1-d931-4496-8621-2adb011dafb0'
+//   ADMIN_HELP_URL: 'https://www.turku.fi/kerrokantasi-ohjeistus'
+//   ENABLE_STRONG_AUTH: 'true'
+//   ENABLE_RESPONSE_COMPRESSION: 'true'
+//   WMS_BASE_URL: 'https://opaskartta.turku.fi/TeklaOGCWeb/WMS.ashx'
+//   WMS_ATTRIBUTION: '<a href=\'https://opaskartta.turku.fi/\' rel=\'noreferrer\' target=\'_blank\'>Opaskartta</a>'
+// }
+
+// Test
 param uiAppSettings object = {
   KERROKANTASI_API_BASE: apiUrl
   HERO_IMAGE_URL: 'https://www.turku.fi/sites/default/files/thumbnails/image/kesarauha.jpg'
@@ -219,12 +293,12 @@ var privateEndpointRequirements = [
 ]
 
 var goforeIps = {
-  goforeKamppi: '81.175.255.179' // Gofore Kamppi egress
-  goforeTampere: '82.141.89.43' // Gofore Tampere egress
-  goforeVpn: '80.248.248.85' // Gofore VPN egress
+  goforeHelsinki: goforeHelsinki // Gofore Kamppi egress
+  goforeTampere: goforeTampere // Gofore Tampere egress
+  goforeVpn: goforeVpn // Gofore VPN egress
 }
 var goforeCidrs = {
-  goforeKamppi: '${goforeIps.goforeKamppi}/24'
+  goforeHelsinki: '${goforeIps.goforeHelsinki}/24'
   goforeTampere: '${goforeIps.goforeTampere}/24'
   goforeVpn: '${goforeIps.goforeVpn}/24'
 }
@@ -653,9 +727,9 @@ var ipSecurityRestrictionsForGoforeIpsOnly = [
     action: 'Allow'
     tag: 'Default'
     priority: 100
-    name: 'AllowGoforeKamppiInbound'
+    name: 'AllowgoforeHelsinkiInbound'
     description: 'Allow HTTP/HTTPS from Application Gateway subnet'
-    ipAddress: goforeCidrs.goforeKamppi
+    ipAddress: goforeCidrs.goforeHelsinki
   }
   {
     action: 'Allow'

@@ -27,6 +27,9 @@ param openIdClientId = '4b872185-8b54-4e10-b3e1-125fcd0fa0f6'
 param openIdAudience = 'https://auth.turku.fi/kerrokantasi'
 param openIdAuthority = 'https://testitunnistamo.turku.fi/openid'
 param openIdApiTokenUrl = 'https://testitunnistamo.turku.fi/api-tokens/'
+param goforeHelsinki =
+param goforeTampere =
+param goforeVpn =
 
 // Prod
 // var prefix = readEnvironmentVariable('RESOURCE_PREFIX')

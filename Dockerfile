@@ -20,7 +20,7 @@ ENV PYTHONUNBUFFERED True
 
 # less & netcat-openbsd are there for in-container manual debugging
 # kerrokantasi needs gdal
-RUN apt-get update && apt-get install -y postgresql-client less netcat-openbsd gettext locales gdal-bin python-gdal python3-gdal dialog openssh-server
+RUN apt-get update && apt-get install -y postgresql-client less netcat-openbsd gettext locales gdal-bin python3-gdal dialog openssh-server
 
 # we need the Finnish locale built
 RUN sed -i 's/^# *\(fi_FI.UTF-8\)/\1/' /etc/locale.gen

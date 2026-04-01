@@ -17,6 +17,7 @@ from democracy.tests.utils import (
     get_hearing_detail_url, sectionimage_test_json, sectionfile_base64_test_data
 )
 from democracy.tests.conftest import default_lang_code, get_feature_with_geometry
+from django.contrib.gis.geos import GEOSGeometry
 
 endpoint = '/v1/hearing/'
 list_endpoint = endpoint
@@ -769,7 +770,7 @@ def test_hearing_geojson_feature(request, john_smith_api_client, valid_hearing_j
     response = john_smith_api_client.post(endpoint, data=valid_hearing_json, format='json')
     hearing_data = get_data_from_response(response, status_code=201)
     hearing = Hearing.objects.get(pk=hearing_data['id'])
-    hearing_geometry = json.loads(hearing.geometry.geojson)
+    hearing_geometry = json.loads(GEOSGeometry(hearing.geometry.wkb).geojson)
     assert hearing.geojson == feature
     assert hearing_data['geojson'] == feature
     assert hearing_data['geojson']['geometry'] == hearing_geometry['geometries'][0]
@@ -797,7 +798,7 @@ def test_hearing_geojson_geometry_only(request, john_smith_api_client, valid_hea
     response = john_smith_api_client.post(endpoint, data=valid_hearing_json, format='json')
     hearing_data = get_data_from_response(response, status_code=201)
     hearing = Hearing.objects.get(pk=hearing_data['id'])
-    hearing_geometry = json.loads(hearing.geometry.geojson)
+    hearing_geometry = json.loads(GEOSGeometry(hearing.geometry.wkb).geojson)
     assert hearing.geojson == geojson_geometry
     assert hearing_data['geojson'] == geojson_geometry
     assert hearing_data['geojson'] == hearing_geometry['geometries'][0]
@@ -818,7 +819,7 @@ def test_hearing_geojson_featurecollection_only(request, john_smith_api_client, 
     response = john_smith_api_client.post(endpoint, data=valid_hearing_json, format='json')
     hearing_data = get_data_from_response(response, status_code=201)
     hearing = Hearing.objects.get(pk=hearing_data['id'])
-    hearing_geometry = json.loads(hearing.geometry.geojson)
+    hearing_geometry = json.loads(GEOSGeometry(hearing.geometry.wkb).geojson)
     assert hearing.geojson == geojson_geometry
     assert hearing_data['geojson'] == geojson_geometry
     assert hearing_data['geojson']['features'][0]['geometry'] == hearing_geometry['geometries'][0]

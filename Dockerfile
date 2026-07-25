@@ -1,7 +1,7 @@
 # Dockerfile for Kerrokantasi backend
 # Attemps to provide for both local development and server usage
 
-FROM python:3.7-bullseye as appbase
+FROM python:3.12-bookworm as appbase
 
 RUN useradd -ms /bin/bash -d /kerrokantasi kerrokantasi
 
@@ -20,13 +20,13 @@ ENV PYTHONUNBUFFERED True
 
 # less & netcat-openbsd are there for in-container manual debugging
 # kerrokantasi needs gdal
-RUN apt-get update && apt-get install -y postgresql-client less netcat-openbsd gettext locales gdal-bin python3-gdal dialog openssh-server
+RUN apt-get update && apt-get install -y postgresql-client less netcat-openbsd gettext locales gdal-bin python3-gdal dialog openssh-server libxml2-dev libxslt1-dev
 
 # we need the Finnish locale built
 RUN sed -i 's/^# *\(fi_FI.UTF-8\)/\1/' /etc/locale.gen
 RUN locale-gen
 
-RUN pip install --no-cache-dir uwsgi
+RUN pip install --no-cache-dir uwsgi setuptools
 
 # Sentry CLI for sending events from non-Python processes to Sentry
 # eg. https://docs.sentry.io/cli/send-event/#bash-hook
@@ -56,7 +56,7 @@ RUN mkdir -p /srv/static && python manage.py collectstatic
 
 # Add cron
 
-RUN echo '22 2 * * * cd /var/www/kerrokantasi-back/app/; /var/www/kerrokantasi-back/venv37/bin/python manage.py clean_expired_users' >> /etc/crontab
+RUN echo '22 2 * * * cd /kerrokantasi; python manage.py clean_expired_users' >> /etc/crontab
 RUN printenv > /etc/environment
 
 RUN chmod a+x ./deploy/entrypoint.sh

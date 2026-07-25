@@ -3,7 +3,7 @@ import django_filters
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.utils import timezone
-from django.utils.encoding import force_text
+from django.utils.encoding import force_str
 from rest_framework import permissions, response, serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.settings import api_settings
@@ -144,7 +144,7 @@ class BaseCommentViewSet(AdminsSeeUnpublishedMixin, viewsets.ModelViewSet):
             assert parent.check_commenting(request) is None
         except ValidationError as verr:
             return response.Response(
-                {'status': force_text(verr), 'code': verr.code},
+                {'status': force_str(verr), 'code': verr.code},
                 status=status.HTTP_403_FORBIDDEN
             )
 
@@ -155,7 +155,7 @@ class BaseCommentViewSet(AdminsSeeUnpublishedMixin, viewsets.ModelViewSet):
             assert parent.check_voting(request) is None
         except ValidationError as verr:
             return response.Response(
-                {'status': force_text(verr), 'code': verr.code},
+                {'status': force_str(verr), 'code': verr.code},
                 status=status.HTTP_403_FORBIDDEN
             )
     

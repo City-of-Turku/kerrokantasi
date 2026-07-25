@@ -5,7 +5,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db.models import F
 from django.db.transaction import atomic
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 from rest_framework import filters, serializers, status, response
 from rest_framework.exceptions import ValidationError
 from rest_framework.serializers import as_serializer_error

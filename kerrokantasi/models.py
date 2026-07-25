@@ -3,7 +3,7 @@ from django.db import models
 from helusers.models import AbstractUser
 
 from kerrokantasi.utils import send_mail
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
 
 class User(AbstractUser):

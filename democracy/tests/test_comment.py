@@ -5,7 +5,7 @@ import urllib
 
 import pytest
 from django.test.utils import override_settings
-from django.utils.encoding import force_text
+from django.utils.encoding import force_str
 from django.utils.timezone import now
 from reversion import revisions
 from reversion.models import Version
@@ -892,7 +892,7 @@ def test_comment_edit_versioning(john_doe_api_client, default_hearing, lookup_fi
 def test_correct_m2m_fks(admin_user, default_hearing):
     first_section = default_hearing.sections.first()
     section_comment = first_section.comments.create(created_by=admin_user, content="hello")
-    sc_voters_query = force_text(section_comment.voters.all().query)
+    sc_voters_query = force_str(section_comment.voters.all().query)
     assert "sectioncomment" in sc_voters_query and "hearingcomment" not in sc_voters_query
 
 

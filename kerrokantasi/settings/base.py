@@ -112,9 +112,28 @@ CSRF_TRUSTED_ORIGINS = env('CSRF_TRUSTED_ORIGINS')
 CLIENT_SECRET = env('CLIENT_SECRET')
 ADMINS = env('ADMINS')
 
+def configure_database_ssl(db_settings):
+    """
+    Azure PostgreSQL requires encrypted connections. With libpq 15+ and uWSGI
+    dropping privileges, a stale HOME=/root makes libpq probe unreadable client
+    cert paths and fall back to plaintext, which Azure rejects.
+
+    sslmode comes from DATABASE_URL (?sslmode=require in Key Vault). Local dev
+    uses an unencrypted PostGIS container and is left on libpq defaults (prefer).
+    """
+    host = db_settings.get('HOST', '')
+    if not host.endswith('.postgres.database.azure.com'):
+        return
+
+    options = db_settings.setdefault('OPTIONS', {})
+    options.setdefault('sslmode', 'require')
+    options['sslcert'] = '/tmp/postgresql.crt'
+
+
 DATABASES = {
     'default': env.db('DATABASE_URL')
 }
+configure_database_ssl(DATABASES['default'])
 
 if env.db("TEST_DATABASE_URL"):
     DATABASES["default"]["TEST"] = env.db("TEST_DATABASE_URL")

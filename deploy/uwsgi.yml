@@ -8,6 +8,7 @@ uwsgi:
   master: true
   uid: kerrokantasi
   gid: kerrokantasi
+  env: HOME=/kerrokantasi,PGSSLCERT=/tmp/postgresql.crt
   umask: 022
   reload-on-rss: 300
   # Allow large image uploads

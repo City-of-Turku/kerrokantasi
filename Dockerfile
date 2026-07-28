@@ -74,3 +74,5 @@ RUN pip install --no-cache-dir -r requirements-dev.txt
 FROM appbase as production
 
 ENV DEBUG=False
+ENV HOME=/kerrokantasi
+ENV PGSSLCERT=/tmp/postgresql.crt

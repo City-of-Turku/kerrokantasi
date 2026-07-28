@@ -887,7 +887,7 @@ resource keyvault 'Microsoft.KeyVault/vaults@2023-07-01' = {
   resource dbUrlSecret 'secrets' = {
     name: 'dbUrl'
     properties: {
-      value: 'postgis://${dbUsername}:${dbPassword}@${dbServerName}.postgres.database.azure.com/${dbName}'
+      value: 'postgis://${dbUsername}:${dbPassword}@${dbServerName}.postgres.database.azure.com/${dbName}?sslmode=require'
     }
   }
 

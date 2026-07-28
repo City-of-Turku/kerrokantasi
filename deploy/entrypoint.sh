@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# uWSGI drops to kerrokantasi but keeps root's HOME unless we override it.
+# libpq then tries to read /root/.postgresql/postgresql.crt and SSL setup fails.
+export HOME=/kerrokantasi
+if [[ "${DATABASE_URL:-}" == *".postgres.database.azure.com"* ]]; then
+    export PGSSLCERT=/tmp/postgresql.crt
+fi
 
 # Enable SSH and give it access to app setting env variables
 if [[ "$ENABLE_SSH" = "true" ]]; then

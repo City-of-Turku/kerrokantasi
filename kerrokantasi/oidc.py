@@ -1,12 +1,26 @@
+import json
+
+import requests
 from django.conf import settings
 from django.utils import timezone
 from helusers.oidc import ApiTokenAuthentication as HelApiTokenAuth
+from requests.exceptions import RequestException
 from rest_framework.exceptions import AuthenticationFailed
 
 
 class ApiTokenAuthentication(HelApiTokenAuth):
     def authenticate(self, request):
-        result = super().authenticate(request)
+        try:
+            result = super().authenticate(request)
+        except json.JSONDecodeError as exc:
+            raise AuthenticationFailed(
+                'Unable to verify access token: authentication service returned an invalid response.'
+            ) from exc
+        except RequestException as exc:
+            raise AuthenticationFailed(
+                'Unable to verify access token: authentication service is temporarily unavailable.'
+            ) from exc
+
         if result is None:
             return None
 

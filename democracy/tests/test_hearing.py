@@ -3,7 +3,7 @@ import json
 import os
 
 import pytest
-from django.utils.encoding import force_text
+from django.utils.encoding import force_str
 from django.utils.timezone import now
 
 from democracy.enums import InitialSectionType
@@ -670,7 +670,7 @@ def test_get_hearing_check_section_type(api_client, default_hearing):
 
 @pytest.mark.django_db
 def test_hearing_stringification(random_hearing):
-    assert force_text(random_hearing) == random_hearing.title
+    assert force_str(random_hearing) == random_hearing.title
 
 
 @pytest.mark.django_db

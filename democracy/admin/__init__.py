@@ -12,10 +12,10 @@ from django.contrib.admin.utils import NestedObjects
 from django.contrib.gis.db.models import ManyToManyField
 from django.core.exceptions import ValidationError
 from django.http import HttpResponseRedirect
-from django.utils.encoding import force_text
+from django.utils.encoding import force_str
 from django.utils.text import capfirst
 from django.utils.html import format_html
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 from django.urls import reverse
 from django_admin_inline_paginator.admin import TabularInlinePaginated
 from ckeditor_uploader.widgets import CKEditorUploadingWidget
@@ -47,7 +47,7 @@ class FixedModelForm(TranslatableModelForm):
     def __init__(self, *args, **kwargs):
         super(FixedModelForm, self).__init__(*args, **kwargs)
 
-        msg = force_text(_('Hold down "Control", or "Command" on a Mac, to select more than one.'))
+        msg = force_str(_('Hold down "Control", or "Command" on a Mac, to select more than one.'))
 
         for name, field in self.fields.items():
             if isinstance(field, GeoJSONFormField):

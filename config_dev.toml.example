@@ -44,6 +44,7 @@ ADMINS=admin@this.kerrokantasi.instance,another-admin@this.kerrokantasi
 
 # Configures database for Kerrokantasi using URL style. Format is:
 # postgis://USER:PASSWORD@HOST:PORT/NAME
+# For Azure Database for PostgreSQL, append ?sslmode=require
 # Unused components may be left out, only Postgis is supported
 # The example below configures Kerrokantasi to use local PostgreSQL database
 # called "kerrokantasi", connecting with same username as Django is running as.

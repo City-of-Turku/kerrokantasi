@@ -1,4 +1,4 @@
-from django.conf.urls import include, url
+from django.urls import include, re_path
 from rest_framework_nested import routers
 
 from democracy.views import (
@@ -26,8 +26,8 @@ section_comments_router = routers.NestedSimpleRouter(hearing_child_router, r'sec
 section_comments_router.register(r'comments', SectionCommentViewSet, basename='comments')
 
 urlpatterns = [
-    url(r'^', include(router.urls)),
-    url(r'^', include(hearing_child_router.urls)),
-    url(r'^', include(section_comments_router.urls)),
-    url(r'^download/(?P<filetype>sectionfile|sectionimage)/(?P<pk>\d+)/$', ServeFileView.as_view(), name='serve_file'),
+    re_path(r'^', include(router.urls)),
+    re_path(r'^', include(hearing_child_router.urls)),
+    re_path(r'^', include(section_comments_router.urls)),
+    re_path(r'^download/(?P<filetype>sectionfile|sectionimage)/(?P<pk>\d+)/$', ServeFileView.as_view(), name='serve_file'),
 ]

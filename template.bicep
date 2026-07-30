@@ -129,7 +129,7 @@ param apiAppSettings object = {
   OIDC_API_AUDIENCE: 'https://auth.turku.fi/kerrokantasi,29cbb3d4-9e3b-47a1-ac02-ae101e17d48c'
   OIDC_API_SCOPE_PREFIX: 'kerrokantasi'
   OIDC_API_REQUIRE_SCOPE_FOR_AUTHENTICATION: 'False'
-  OIDC_API_ISSUER: 'https://testitunnistamo.turku.fi/'
+  OIDC_API_ISSUER: 'https://testitunnistamo.turku.fi/openid'
   OIDC_API_AUTHORIZATION_FIELD: 'https://auth.turku.fi/'
   SOCIAL_AUTH_TUNNISTAMO_KEY: 'https://auth.turku.fi/kerrokantasi'
   SOCIAL_AUTH_TUNNISTAMO_SECRET: socialAuthTunnistamoSecret
@@ -887,7 +887,7 @@ resource keyvault 'Microsoft.KeyVault/vaults@2023-07-01' = {
   resource dbUrlSecret 'secrets' = {
     name: 'dbUrl'
     properties: {
-      value: 'postgis://${dbUsername}:${dbPassword}@${dbServerName}.postgres.database.azure.com/${dbName}'
+      value: 'postgis://${dbUsername}:${dbPassword}@${dbServerName}.postgres.database.azure.com/${dbName}?sslmode=require'
     }
   }
 

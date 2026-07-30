@@ -3,11 +3,13 @@ uwsgi:
   # python docker image cannot use that due to linker mishaps
   # plugins: python3,http
   wsgi-file: kerrokantasi/wsgi.py
+  preload-app: true
   processes: 12
   threads: 1
   master: true
   uid: kerrokantasi
   gid: kerrokantasi
+  env: HOME=/kerrokantasi,PGSSLCERT=/tmp/postgresql.crt
   umask: 022
   reload-on-rss: 300
   # Allow large image uploads

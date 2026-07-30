@@ -4,7 +4,7 @@ import re
 from django.conf import settings
 from django.urls import get_resolver
 from django.db import models
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 from reversion import revisions
 from autoslug import AutoSlugField
 from parler.models import TranslatedFields, TranslatableModel

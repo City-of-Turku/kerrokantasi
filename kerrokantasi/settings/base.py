@@ -6,7 +6,8 @@ import sentry_sdk
 import subprocess
 from sentry_sdk.integrations.django import DjangoIntegration
 
-gettext = lambda s: s # noqa makes possible to translate strings here
+from django.utils.translation import gettext_lazy as _
+from helusers.defaults import SOCIAL_AUTH_PIPELINE
 
 CONFIG_FILE_NAME = "config_dev.toml"
 
@@ -111,9 +112,28 @@ CSRF_TRUSTED_ORIGINS = env('CSRF_TRUSTED_ORIGINS')
 CLIENT_SECRET = env('CLIENT_SECRET')
 ADMINS = env('ADMINS')
 
+def configure_database_ssl(db_settings):
+    """
+    Azure PostgreSQL requires encrypted connections. With libpq 15+ and uWSGI
+    dropping privileges, a stale HOME=/root makes libpq probe unreadable client
+    cert paths and fall back to plaintext, which Azure rejects.
+
+    sslmode comes from DATABASE_URL (?sslmode=require in Key Vault). Local dev
+    uses an unencrypted PostGIS container and is left on libpq defaults (prefer).
+    """
+    host = db_settings.get('HOST', '')
+    if not host.endswith('.postgres.database.azure.com'):
+        return
+
+    options = db_settings.setdefault('OPTIONS', {})
+    options.setdefault('sslmode', 'require')
+    options['sslcert'] = '/tmp/postgresql.crt'
+
+
 DATABASES = {
     'default': env.db('DATABASE_URL')
 }
+configure_database_ssl(DATABASES['default'])
 
 if env.db("TEST_DATABASE_URL"):
     DATABASES["default"]["TEST"] = env.db("TEST_DATABASE_URL")
@@ -167,9 +187,9 @@ CKEDITOR_IMAGE_BACKEND = 'pillow'
 MAX_IMAGE_SIZE = 10**6
 
 INSTALLED_APPS = [
-    "helusers",
-    "helusers.providers.helsinki_oidc",
-    'social_django',    
+    'helusers.apps.HelusersConfig',
+    'helusers.providers.helsinki_oidc',
+    'social_django',
     'helusers.apps.HelusersAdminConfig',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -179,7 +199,6 @@ INSTALLED_APPS = [
     'whitenoise.runserver_nostatic',
     'django.contrib.staticfiles',
     'django.contrib.sites',
-    'modeltranslation',
     'mptt',
     'nested_admin',
     'rest_framework',
@@ -245,15 +264,14 @@ WSGI_APPLICATION = 'kerrokantasi.wsgi.application'
 LANGUAGE_CODE = 'en'
 TIME_ZONE = 'UTC'
 USE_I18N = True
-USE_L10N = True
 USE_TZ = True
 LANGUAGES = (
-    ('fi', gettext('Finnish')),
-    ('sv', gettext('Swedish')),
-    ('en', gettext('English')),
+    ('fi', _('Finnish')),
+    ('sv', _('Swedish')),
+    ('en', _('English')),
 )
 CORS_ALLOW_CREDENTIALS = True
-CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOW_ALL_ORIGINS = True
 CORS_URLS_REGEX = r'^/[a-z0-9-]*/?v1/.*$'
 
 REST_FRAMEWORK = {
@@ -335,7 +353,6 @@ OIDC_API_TOKEN_AUTH = {
 
 KERROKANTASI_MOD_TOOL_CLIENT_ID = env('KERROKANTASI_MOD_TOOL_CLIENT_ID')
 
-OIDC_AUTH = {"OIDC_LEEWAY": 60 * 60}
 STRONG_AUTH_PROVIDERS = env('STRONG_AUTH_PROVIDERS')
 
 AUTHENTICATION_BACKENDS = (
@@ -351,7 +368,7 @@ SOCIAL_AUTH_TUNNISTAMO_KEY = env('SOCIAL_AUTH_TUNNISTAMO_KEY')
 SOCIAL_AUTH_TUNNISTAMO_SECRET = env('SOCIAL_AUTH_TUNNISTAMO_SECRET')
 SOCIAL_AUTH_TUNNISTAMO_OIDC_ENDPOINT = env('SOCIAL_AUTH_TUNNISTAMO_OIDC_ENDPOINT')
 
-SESSION_SERIALIZER = 'django.contrib.sessions.serializers.PickleSerializer'
+SESSION_SERIALIZER = 'helusers.sessions.TunnistamoOIDCSerializer'
 
 # Map defaults
 DEFAULT_MAP_COORDINATES = env('DEFAULT_MAP_COORDINATES')
@@ -373,7 +390,7 @@ if not DEBUG and not SECRET_KEY:
 # expecting SECRET_KEY to stay same will break upon restart. Should not be a
 # problem for development.
 if not SECRET_KEY:
-    logger.warn(
+    logger.warning(
         "SECRET_KEY was not defined in configuration."
         " Generating a temporary key for dev."
     )

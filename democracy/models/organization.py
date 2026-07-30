@@ -2,7 +2,7 @@ from .base import StringIdBaseModel
 from django.db import models
 from django.conf import settings
 from django.utils import timezone
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 from parler.models import TranslatedFields, TranslatableModel
 
 class Organization(StringIdBaseModel):

@@ -1,7 +1,7 @@
 import datetime
 
 import pytest
-from django.utils.encoding import force_text
+from django.utils.encoding import force_str
 from django.utils.timezone import now
 
 from democracy.enums import InitialSectionType
@@ -242,7 +242,7 @@ def test_45_get_hearing_with_many_sections_check_content(api_client, default_hea
 @pytest.mark.django_db
 def test_section_stringification(random_hearing):
     section = random_hearing.sections.first()
-    stringified = force_text(section)
+    stringified = force_str(section)
     assert section.title in stringified
     assert random_hearing.title in stringified
 

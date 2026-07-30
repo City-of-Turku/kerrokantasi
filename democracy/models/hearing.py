@@ -6,7 +6,7 @@ from django.contrib.gis.db import models
 from django.db.models import Sum
 from django.utils import timezone
 from django.utils.timezone import now
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 from djgeojson.fields import GeoJSONField
 from autoslug import AutoSlugField
 from autoslug.utils import generate_unique_slug

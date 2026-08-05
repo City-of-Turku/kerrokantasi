@@ -28,7 +28,7 @@ coverage==5.5
     #   pytest-cov
 coveralls==3.0.1
     # via -r requirements-dev.in
-cryptography==49.0.0
+cryptography==50.0.0
     # via
     #   pyjwt
     #   social-auth-core

@@ -107,7 +107,7 @@ easy-thumbnails==2.10.1
     # via -r requirements.in
 ecdsa==0.19.2
     # via python-jose
-idna==2.10
+idna==3.15
     # via requests
 jsonfield==3.1.0
     # via -r requirements.in

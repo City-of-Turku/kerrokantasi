@@ -183,7 +183,7 @@ social-auth-app-django==5.4.3
     # via -r requirements.in
 social-auth-core==4.7.0
     # via social-auth-app-django
-sqlparse==0.5.5
+sqlparse==0.6.0
     # via django
 typing-extensions==4.16.0
     # via

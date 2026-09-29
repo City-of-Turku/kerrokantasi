@@ -147,7 +147,7 @@ lxml==6.1.1
     #   python-pptx
 mccabe==0.7.0
     # via flake8
-oauthlib==3.3.1
+oauthlib==4.0.0
     # via
     #   requests-oauthlib
     #   social-auth-core

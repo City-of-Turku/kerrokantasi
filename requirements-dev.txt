@@ -178,7 +178,7 @@ pycparser==3.0
     # via cffi
 pyflakes==3.4.0
     # via flake8
-pyjwt[crypto]==2.13.0
+pyjwt[crypto]==2.15.0
     # via
     #   -r requirements.in
     #   social-auth-core
